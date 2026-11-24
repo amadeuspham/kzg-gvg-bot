@@ -14,7 +14,7 @@ What: how to work in this repo, for people and AI assistants alike. The agent-sp
 
 - Secrets never enter git, logs, issues or PRs. Fixtures use made-up values.
 - Keep `Kzg.Core` free of Discord, UI and native references.
-- Live and load tests are opt-in (`KZG_LIVE=1`, `KZG_LOAD=1`) and never part of CI.
+- Live, real-clock and load tests are opt-in (`KZG_LIVE=1`, `KZG_REALTIME=1`, `KZG_LOAD=1`) and never part of CI.
 - libdave stays at 1.2.1.9.
 - Record non-obvious decisions as one line in [docs/decisions.md](docs/decisions.md).
 - Release steps and signing are covered by `.github/workflows/release.yml` and the dev-setup guide; a release needs the maintainer's explicit go-ahead.

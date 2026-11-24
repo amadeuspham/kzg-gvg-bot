@@ -34,7 +34,7 @@ A Discord relay for Where Winds Meet guild wars. A bot in each small voice chann
 
 Run `scripts/check.sh` before every commit. It builds, checks formatting, and runs the tests. `Kzg.Core` must keep at least 80% line coverage.
 
-Two opt-in tests are skipped by the gate: `KZG_LIVE=1` runs checks against the Discord test server (bots in `.data/secrets.json`), and `KZG_LOAD=1` runs the load test (five minutes by default, `KZG_LOAD_SECONDS` sets the length; needs macOS `say`). Both are described in [docs/contracts.md](docs/contracts.md).
+Three opt-in groups of tests are skipped by the gate: `KZG_LIVE=1` runs checks against the Discord test server (bots in `.data/secrets.json`), `KZG_REALTIME=1` runs the tests that drive the engine against the wall clock and assert timing ranges (run them on a quiet machine), and `KZG_LOAD=1` runs the load test (five minutes by default, `KZG_LOAD_SECONDS` sets the length; needs macOS `say`). They are described in [docs/contracts.md](docs/contracts.md).
 
 ## Packaging
 

@@ -20,6 +20,7 @@ Read these first, in order: [docs/plan.md](docs/plan.md) (what and why), [docs/d
 - Format: `dotnet format Kzg.slnx`
 - Offline bot with a made-up server and demo connect codes: `dotnet run --project src/Kzg.Bot -- --fake`
 - Live tests (real Discord test server): `KZG_LIVE=1 dotnet test tests/Kzg.Bot.Tests -c Release --filter "FullyQualifiedName~Live"`. Warn the user first: it joins real voice channels.
+- Real-clock tests (engine thread against the wall clock; skipped by the gate): `KZG_REALTIME=1 dotnet test tests/Kzg.Bot.Tests -c Release`
 - Load test: `KZG_LOAD=1 [KZG_LOAD_SECONDS=300] dotnet test tests/Kzg.Bot.Tests -c Release --filter "FullyQualifiedName~Load"` (macOS `say`; see rule 3).
 - Project skills in `.claude/skills/`: `ui-check` (render and inspect the app screens), `live-test` (live Discord tests, warn first), `release` (prepare a release, stops before publishing), `add-command` (checklist for a new `/gvg` subcommand), `soak` (hour-long load test).
 - `scripts/dotnet.sh` finds a dotnet with the SDK that `global.json` asks for; the gate sources it. If `dotnet` is not on PATH, the SDK is usually in `~/.dotnet`.
