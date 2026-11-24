@@ -16,6 +16,7 @@ What: what a machine needs to build, test and live-test kzg-gvg-bot, and how to 
 | Bot or engine work | The gate only. `dotnet run --project src/Kzg.Bot -- --fake` runs offline. |
 | App work | Any OS. macOS needs the Input Monitoring permission for the terminal or app running it. Windows key behaviour under an elevated game needs a Windows PC with the game. |
 | Live tests (`KZG_LIVE=1`) | A Discord test server with six voice channels (Attack 1-3, Defense 1-3), the bot accounts, and `.data/secrets.json`. Details below. Real network; UDP to Discord voice must be open. |
+| Real-clock tests (`KZG_REALTIME=1`) | Any OS, a quiet machine: they assert timing ranges against the wall clock. `KZG_REALTIME=1 dotnet test tests/Kzg.Bot.Tests -c Release`. |
 | Load test (`KZG_LOAD=1`) | macOS, for `say`. Five minutes by default. |
 | Linux bot | glibc 2.38 or newer (Ubuntu 24.04). Older hosts use the Docker image. |
 | Packaging | The host OS for its own target; macOS packages build on a Mac. See README "Packaging". |

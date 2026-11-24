@@ -31,3 +31,7 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 ## Hosting
 
 - The bot runs on Windows, Linux (Docker for glibc older than 2.38) or an Apple Silicon Mac. Intel Macs are not supported.
+
+## Testing
+
+- Tests that run the engine against the wall clock (`[RealTimeFact]`, `KZG_REALTIME=1`) are opt-in like the live and load tests: their timing ranges fail on a busy CI runner, and the gate runs fake clocks only.
