@@ -456,14 +456,15 @@ public sealed class RelayLinkTests
         link.Send(new byte[] { 1 });
         _voice.Interrupt();
         lead.SetResult();
-        Thread.Sleep(100);
+        // The lead's continuation may run on another thread: resume only once it has dropped the frames.
+        Assert.True(SpinWait.SpinUntil(() => !link.HoldingFrames, TimeSpan.FromSeconds(5)));
         Assert.Empty(_voice.Sent);
 
         _voice.Resume();
-        SpinWait.SpinUntil(() => _voice.Speaking.Count >= 5, TimeSpan.FromSeconds(2));
+        Assert.True(SpinWait.SpinUntil(() => _voice.Speaking.Count >= 5, TimeSpan.FromSeconds(5)));
         link.Send(new byte[] { 2 });
 
-        SpinWait.SpinUntil(() => _voice.Sent.Count == 1, TimeSpan.FromSeconds(2));
+        Assert.True(SpinWait.SpinUntil(() => _voice.Sent.Count == 1, TimeSpan.FromSeconds(5)));
         Assert.Equal(new byte[] { 2 }, _voice.Sent[0].Opus);
     }
 
