@@ -179,7 +179,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
 
     private static string Name(UserId user) => DemoWorld.Members[user].Split(' ')[0];
 
-    [Fact]
+    [RealTimeFact]
     public async Task Every_key_and_every_open_mic_from_every_VC_reaches_where_it_should_and_nothing_else()
     {
         await using var rig = Seated(await new HostRig().StartAsync());
@@ -229,7 +229,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
 
     // ---- latency
 
-    [Fact]
+    [RealTimeFact]
     public async Task A_click_train_reaches_the_other_VCs_with_a_p95_added_latency_of_300_ms_or_less()
     {
         await using var rig = Seated(await new HostRig().StartAsync());
@@ -276,7 +276,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
 
     // ---- pre-roll
 
-    [Fact]
+    [RealTimeFact]
     public async Task A_key_pressed_200_ms_after_speech_began_still_delivers_the_first_word_whole()
     {
         await using var rig = Seated(await new HostRig().StartAsync());
@@ -302,7 +302,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
         }
     }
 
-    [Theory]
+    [RealTimeTheory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task A_second_broadcast_after_a_long_pause_is_relayed_whole_whichever_way_the_client_numbers_it(bool timestampFollowsClock)
@@ -317,16 +317,19 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
         await app.PressAsync(true);
         await app.WaitAsync(s => s.Active.Contains(WireAction.Group));
         await link.PlayAsync(DemoWorld.Alice, first);
+        var firstEnded = rig.Time.Now;
         await Task.Delay(400);
         await app.PressAsync(false);
         await Task.Delay(3000);
         Link(rig, DemoWorld.Attack2).ClearSent();
-        if (timestampFollowsClock)
-        {
-            link.Pause(DemoWorld.Alice, 3400 / OpusFormat.FrameMs);
-        }
         await app.PressAsync(true);
         await app.WaitAsync(s => s.Active.Contains(WireAction.Group));
+        if (timestampFollowsClock)
+        {
+            // Measured, not the 3.4 s asked for: a timer that oversleeps makes the pause longer, and a
+            // timestamp short of it is a client that does not follow its clock.
+            link.Pause(DemoWorld.Alice, (int)((rig.Time.Now - firstEnded).TotalMilliseconds / OpusFormat.FrameMs));
+        }
         await link.PlayAsync(DemoWorld.Alice, second);
         await Task.Delay(500);
         await app.PressAsync(false);
@@ -340,7 +343,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
 
     // ---- logs
 
-    [Fact]
+    [RealTimeFact]
     public async Task A_whole_session_of_signing_in_broadcasting_and_reconnecting_leaves_no_secret_in_the_log()
     {
         await using var rig = Seated(await new HostRig().StartAsync());
@@ -400,7 +403,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
         }
     }
 
-    [Fact]
+    [RealTimeFact]
     public async Task A_move_in_the_middle_of_a_broadcast_retargets_it()
     {
         await using var rig = Seated(await new HostRig().StartAsync());
@@ -441,7 +444,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
         Assert.Empty(Link(rig, DemoWorld.Attack1).Sent);
     }
 
-    [Fact]
+    [RealTimeFact]
     public async Task Leaving_the_team_channels_ends_the_open_mic_at_once()
     {
         await using var rig = Seated(await new HostRig().StartAsync());
@@ -470,7 +473,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
         Assert.True(frames.Max() < 60 + 10);
     }
 
-    [Fact]
+    [RealTimeFact]
     public async Task An_app_that_goes_quiet_or_is_cut_off_ends_its_relay_within_six_seconds()
     {
         await using var rig = Seated(await new HostRig().StartAsync());
@@ -661,7 +664,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
     private static void WaitUntil(Func<bool> condition, string what) =>
         Assert.True(SpinWait.SpinUntil(condition, TimeSpan.FromSeconds(8)), "timed out waiting for " + what);
 
-    [Fact]
+    [RealTimeFact]
     public async Task Jungle_test_from_any_member_reaches_every_bound_VC()
     {
         await using var rig = Seated(await new HostRig(c => c with { GuildId = 5000 }).StartAsync());
@@ -677,7 +680,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
         }
     }
 
-    [Fact]
+    [RealTimeFact]
     public async Task A_synced_clock_plays_its_call_through_the_host_timer_with_no_command_after_the_sync()
     {
         await using var rig = Seated(await new HostRig(c => c with { GuildId = 5000 }).StartAsync());
@@ -692,7 +695,7 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
         }
     }
 
-    [Fact]
+    [RealTimeFact]
     public async Task Jungle_test_with_no_relay_bot_in_voice_says_nobody_heard_it()
     {
         await using var rig = await new HostRig(c => c with { GuildId = 5000 }).StartAsync();

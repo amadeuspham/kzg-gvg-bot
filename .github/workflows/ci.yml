@@ -41,7 +41,8 @@ jobs:
       # scripts/dotnet.sh picks the SDK from DOTNET_ROOT, which setup-dotnet sets.
       - name: Gate (build, format, tests, coverage)
         env:
-          # Live (Discord) and load tests stay skipped: they need KZG_LIVE=1 / KZG_LOAD=1 and secrets.
+          # Live (Discord), real-clock and load tests stay skipped: they need KZG_LIVE=1 / KZG_REALTIME=1 / KZG_LOAD=1.
           KZG_LIVE: ""
+          KZG_REALTIME: ""
           KZG_LOAD: ""
         run: scripts/check.sh

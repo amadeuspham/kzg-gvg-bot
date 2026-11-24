@@ -159,14 +159,16 @@ public sealed class AudioEngine : IAppEvents, IDisposable
                 return;
             }
             var now = _time.Now;
+            var slot = due;
             if (now - due > _options.MaxBehind)
             {
                 start += now - due;
+                slot = now;
                 Interlocked.Increment(ref _resyncs);
             }
             try
             {
-                Tick(now);
+                Tick(now, slot);
             }
             catch (Exception exception)
             {
@@ -194,13 +196,20 @@ public sealed class AudioEngine : IAppEvents, IDisposable
 
     public void Tick() => Tick(_time.Now);
 
-    public void Tick(TimeSpan now)
+    public void Tick(TimeSpan now) => Tick(now, now);
+
+    /// <param name="slot">
+    /// When this tick was due. Players' buffers are read at it, not at <paramref name="now"/>: the ticks that
+    /// catch up a stall all run at about the same now, and read at it they would find one frame due between
+    /// them and then see the relay as fallen behind by the stall, and jump to live over what it held back.
+    /// </param>
+    private void Tick(TimeSpan now, TimeSpan slot)
     {
         Interlocked.Increment(ref _ticks);
         Drain(now);
         PollLinks();
         var plan = _routing.Tick(now);
-        Relay(plan, now);
+        Relay(plan, now, slot);
         Report(plan);
         if (++_tickCount % HousekeepingEvery == 0)
         {
@@ -249,7 +258,7 @@ public sealed class AudioEngine : IAppEvents, IDisposable
         }
     }
 
-    private void Relay(TickPlan plan, TimeSpan now)
+    private void Relay(TickPlan plan, TimeSpan now, TimeSpan slot)
     {
         foreach (var ended in plan.Ended)
         {
@@ -278,7 +287,7 @@ public sealed class AudioEngine : IAppEvents, IDisposable
                 _frames[route.User.V] = new MixInput(FrameRead.Silent, user.RelayPcm);
                 continue;
             }
-            var frame = user.Buffer.Read(now);
+            var frame = user.Buffer.Read(slot);
             if (frame.Kind == FrameKind.Missing)
             {
                 // The relay needed a frame the buffer didn't have: an underrun, concealed by the decoder.

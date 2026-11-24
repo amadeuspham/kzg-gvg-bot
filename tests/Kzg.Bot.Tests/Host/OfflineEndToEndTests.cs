@@ -18,7 +18,7 @@ public sealed class OfflineEndToEndTests
     private static List<int> Relayed(FakeVoiceChannelLink link, Dictionary<string, int> index) =>
         [.. link.Sent.Select(frame => SpeechAudio.IndexOf(index, frame.Opus))];
 
-    [Fact]
+    [RealTimeFact]
     public async Task A_press_from_the_app_relays_A1_to_A2_and_A3_never_to_A1_and_the_preroll_keeps_the_first_frames()
     {
         await using var rig = await new HostRig().StartAsync();
@@ -62,7 +62,7 @@ public sealed class OfflineEndToEndTests
         Assert.Equal([true, false], Link(rig, DemoWorld.Attack2).SpeakingChanges.Select(c => c.On));
     }
 
-    [Fact]
+    [RealTimeFact]
     public async Task Two_players_pressing_at_once_reach_each_others_VCs_and_are_mixed_where_both_are_heard()
     {
         await using var rig = await new HostRig().StartAsync();
