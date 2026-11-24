@@ -218,11 +218,12 @@ public sealed class SetupServer : IAsyncDisposable
 
     private static IResult Html(int status, string html) => Results.Content(html, "text/html; charset=utf-8", statusCode: status);
 
-    /// <summary>On every reply: nothing cached or passed on, no framing, no script.</summary>
+    /// <summary>On every reply: nothing cached, nothing passed to other sites, no framing, no script.</summary>
     private static readonly (string Name, string Value)[] Headers =
     [
         ("Cache-Control", "no-store"),
-        ("Referrer-Policy", "no-referrer"),
+        // Not no-referrer: a browser then sends "Origin: null" on the page's own forms, which SameOrigin must refuse.
+        ("Referrer-Policy", "same-origin"),
         ("X-Content-Type-Options", "nosniff"),
         ("X-Frame-Options", "DENY"),
         ("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"),

@@ -111,6 +111,18 @@ public sealed class SetupServerTests : IAsyncLifetime
         Assert.Equal(2, _keys.Count);
     }
 
+    [Fact]
+    public async Task The_spent_link_shown_again_leaves_the_open_session_working()
+    {
+        var cookie = await OpenLinkAsync();
+
+        using var again = await Get("/setup?key=" + _keys[0]);
+        using var submitted = await Post("/setup/back", cookie, [], r => r.Headers.Add("Origin", _server.Address.GetLeftPart(UriPartial.Authority)));
+
+        Assert.Equal(HttpStatusCode.Gone, again.StatusCode);
+        Assert.Equal(HttpStatusCode.SeeOther, submitted.StatusCode);
+    }
+
     [Theory]
     [InlineData("evil.example", null, null)]
     [InlineData("gvg.example.com", null, null)]
@@ -159,6 +171,28 @@ public sealed class SetupServerTests : IAsyncLifetime
 
         Assert.Equal(HttpStatusCode.Forbidden, crossOrigin.StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, crossSite.StatusCode);
+        Assert.Equal(SetupStep.Tokens, _wizard.View().Step);
+    }
+
+    [Fact]
+    public async Task The_page_keeps_its_referrer_to_itself_so_a_browser_posts_its_own_origin()
+    {
+        var cookie = await OpenLinkAsync();
+
+        using var page = await Get("/setup", cookie);
+
+        // no-referrer would make the browser send "Origin: null" on the form, and that is refused below.
+        Assert.Equal("same-origin", page.Headers.GetValues("Referrer-Policy").Single());
+    }
+
+    [Fact]
+    public async Task A_form_with_a_null_origin_is_refused()
+    {
+        var cookie = await OpenLinkAsync();
+
+        using var response = await Post("/setup/tokens", cookie, new() { ["token1"] = FakeAccounts.Token(1) }, r => r.Headers.Add("Origin", "null"));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         Assert.Equal(SetupStep.Tokens, _wizard.View().Step);
     }
 
