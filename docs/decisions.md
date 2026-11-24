@@ -35,3 +35,7 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 ## Testing
 
 - Tests that run the engine against the wall clock (`[RealTimeFact]`, `KZG_REALTIME=1`) are opt-in like the live and load tests: their timing ranges fail on a busy CI runner, and the gate runs fake clocks only.
+
+## Release
+
+- The release workflow ends in one job that tags `v<version>` and creates the GitHub Release; app packs set `KZG_UPDATE_FEED` to the repo address so Velopack reads updates from release assets. Per-job artifacts hold only release files, so the last job can attach everything.

@@ -137,7 +137,8 @@ public sealed class ReconnectWithRealBotTests : IDisposable
         {
             ServerOverride = new Uri($"ws://127.0.0.1:{port}/ws"),
             Backoff = [TimeSpan.FromMilliseconds(100)],
-            ReconnectingFor = TimeSpan.FromSeconds(1),
+            // Must outlast a slow runner stopping the bot, or the test never sees "Reconnecting".
+            ReconnectingFor = TimeSpan.FromSeconds(5),
         };
         var time = new SystemTimeSource();
         var settings = AppSettings.CreateDefault();
