@@ -85,6 +85,18 @@ public sealed class RelayLink : IVoiceChannelLink, IDisposable
 
     public long SentNotReady => Interlocked.Read(ref _sentNotReady);
 
+    /// <summary>True while the burst's first frames wait for the flag's lead. Tests wait on it instead of sleeping.</summary>
+    internal bool HoldingFrames
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _held is not null;
+            }
+        }
+    }
+
     /// <summary>Puts a fresh connection under the link; it becomes ready when the connection says so.</summary>
     internal void Bind(IVoiceConnection connection)
     {

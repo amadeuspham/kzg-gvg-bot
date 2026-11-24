@@ -12,7 +12,7 @@ public sealed class JungleClipsTests
 {
     private static readonly ConcentusOpusCodecFactory Codecs = new();
 
-    [Fact]
+    [RealTimeFact]
     public void Every_clip_loads_with_the_real_codec_and_has_at_least_a_second_of_packets()
     {
         var clips = JungleClips.Load(Codecs, 100);
@@ -25,7 +25,7 @@ public sealed class JungleClipsTests
         }
     }
 
-    [Fact]
+    [RealTimeFact]
     public void Every_clip_decodes_and_is_audible()
     {
         foreach (var (clip, packets) in JungleClips.Load(Codecs, 100))
@@ -43,7 +43,7 @@ public sealed class JungleClipsTests
         }
     }
 
-    [Fact]
+    [RealTimeFact]
     public void The_clips_feed_a_source_that_plays_them_whole()
     {
         var clips = JungleClips.Load(Codecs, 100);
@@ -73,7 +73,7 @@ public sealed class JungleClipsTests
         return peak;
     }
 
-    [Fact]
+    [RealTimeFact]
     public void A_lower_volume_gives_quieter_packets_in_proportion()
     {
         var loud = Peak(JungleClips.Load(Codecs, 100)[JungleClip.Jungle40]);
@@ -82,7 +82,7 @@ public sealed class JungleClipsTests
         Assert.InRange(quiet / (double)loud, 0.25, 0.40);
     }
 
-    [Fact]
+    [RealTimeFact]
     public async Task A_volume_change_re_encodes_the_clips_the_host_plays_and_the_next_call_is_quieter()
     {
         await using var rig = await new HostRig(c => c with { GuildId = 5000, JungleVolume = 100 }).StartAsync();
