@@ -7,6 +7,7 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 - NetCord 1.0.0-beta.30 is the Discord library, with libdave pinned to 1.2.1.9; libdave 1.3.0 breaks voice silently.
 - One relay bot per voice channel. Each destination gets a mix-minus of the broadcasters; one source passes through as Opus without re-encoding.
 - The jitter buffer is adaptive, 60 ms growing to 240 ms; a new broadcast reads 300 ms of pre-roll.
+- Engine ticks read players' buffers at their due time, not the wall clock, so ticks that catch up a stall under `MaxBehind` lose no audio.
 - The keyword/trigger-word feature was built and removed. Phone players hear every broadcast and talk in their own team channel.
 - A relay bot that is moved goes straight back to its own channel; only `/gvg bot assign` changes a bot's channel.
 - A relay bot is named after the team channel it is in now ("A1 Broadcaster"), worked out from the config and never stored, and sets that as its nickname when it can; its `tokenRef` stays `relay<setup field>`, which is how `/gvg setup` puts each bot in the channel its setup field named.

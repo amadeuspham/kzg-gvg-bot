@@ -2,6 +2,9 @@ root = true
 
 [*]
 charset = utf-8
+# As .gitattributes checks files out. Unset, dotnet format writes the OS's newline into the lines it
+# rewrites, and on Windows that is CRLF in LF files.
+end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 indent_style = space
@@ -12,6 +15,9 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+[*.{cmd,bat}]
+end_of_line = crlf
 
 [*.cs]
 csharp_style_namespace_declarations = file_scoped:warning

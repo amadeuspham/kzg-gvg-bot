@@ -317,16 +317,19 @@ public sealed class OfflineScenarioTests(ITestOutputHelper output)
         await app.PressAsync(true);
         await app.WaitAsync(s => s.Active.Contains(WireAction.Group));
         await link.PlayAsync(DemoWorld.Alice, first);
+        var firstEnded = rig.Time.Now;
         await Task.Delay(400);
         await app.PressAsync(false);
         await Task.Delay(3000);
         Link(rig, DemoWorld.Attack2).ClearSent();
-        if (timestampFollowsClock)
-        {
-            link.Pause(DemoWorld.Alice, 3400 / OpusFormat.FrameMs);
-        }
         await app.PressAsync(true);
         await app.WaitAsync(s => s.Active.Contains(WireAction.Group));
+        if (timestampFollowsClock)
+        {
+            // Measured, not the 3.4 s asked for: a timer that oversleeps makes the pause longer, and a
+            // timestamp short of it is a client that does not follow its clock.
+            link.Pause(DemoWorld.Alice, (int)((rig.Time.Now - firstEnded).TotalMilliseconds / OpusFormat.FrameMs));
+        }
         await link.PlayAsync(DemoWorld.Alice, second);
         await Task.Delay(500);
         await app.PressAsync(false);
