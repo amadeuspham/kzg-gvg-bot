@@ -36,8 +36,6 @@ jobs:
     if: needs.guard.outputs.ready == 'true'
     runs-on: macos-15
     timeout-minutes: 60
-    permissions:
-      contents: write   # attach release assets
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
@@ -68,11 +66,12 @@ jobs:
           # The identity inside the .p12. The variable name must match what packaging/pack-app.sh reads
           # (the packaging owner adds the signing hook); check it before the first real release.
           KZG_SIGN_IDENTITY: ${{ secrets.KZG_MAC_SIGN_IDENTITY }}
+          KZG_UPDATE_FEED: https://github.com/amadeuspham/kzg-gvg-bot
         run: packaging/pack-app.sh --rid osx-arm64
       - uses: actions/upload-artifact@v7
         with:
           name: app-osx-arm64
-          path: packaging/out/**
+          path: packaging/out/velopack-osx-arm64/**
 
   app-windows:
     needs: guard
@@ -90,11 +89,13 @@ jobs:
       - name: Gate
         run: scripts/check.sh
       - name: Pack app
+        env:
+          KZG_UPDATE_FEED: https://github.com/amadeuspham/kzg-gvg-bot
         run: packaging/pack-app.sh --rid win-x64
       - uses: actions/upload-artifact@v7
         with:
           name: app-win-x64
-          path: packaging/out/**
+          path: packaging/out/velopack-win-x64/**
 
   bot:
     needs: guard
@@ -110,7 +111,41 @@ jobs:
         run: |
           packaging/publish-bot.sh --rid linux-x64
           packaging/publish-bot.sh --rid win-x64
+          packaging/publish-bot.sh --rid osx-arm64
       - uses: actions/upload-artifact@v7
         with:
           name: bot
-          path: packaging/out/**
+          # Archives only; the unpacked publish folders beside them are not release files.
+          path: |
+            packaging/out/kzg-bot-*.tar.gz
+            packaging/out/kzg-bot-*.zip
+
+  release:
+    needs: [app-macos, app-windows, bot]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write   # create the tag and the release, attach assets
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          path: artifacts
+      - name: Collect files and write SHA256SUMS
+        run: |
+          mkdir dist
+          # Artifacts keep their folder layout; release assets are flat, so a repeated name is an error.
+          while IFS= read -r f; do
+            [ ! -e "dist/$(basename "$f")" ] || { echo "duplicate release file: $(basename "$f")" >&2; exit 1; }
+            cp "$f" dist/
+          done < <(find artifacts -type f | sort)
+          cd dist
+          sha256sum -- * > SHA256SUMS
+          cat SHA256SUMS
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          gh release create "v${VERSION}" dist/* \
+            --target "$GITHUB_SHA" --title "v${VERSION}" --generate-notes

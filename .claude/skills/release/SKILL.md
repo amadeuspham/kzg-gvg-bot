@@ -19,4 +19,4 @@ Prepare only. Never commit, tag, push, upload or open a PR; that needs the user'
 6. Sums, with `<v>` the version:
    `cd packaging/out && shasum -a 256 kzg-bot-<v>-linux-x64.tar.gz kzg-bot-<v>-win-x64.zip kzg-bot-<v>-osx-arm64.tar.gz > SHA256SUMS`
    Add the files in `velopack-osx-arm64/` to the same file, and check each sum against the `sha256:` line the script printed.
-7. Hand back: version, gate result, archive names and sums, whether the Mac pack was signed, and what was not run (Windows app pack, Docker image, notarization). Per dev-setup.md, check `pack-app.sh`'s signing variable name against `.github/workflows/release.yml` before the first CI release.
+7. Hand back: version, gate result, archive names and sums, whether the Mac pack was signed, and what was not run (Windows app pack, Docker image, notarization). CI does the same sums in `.github/workflows/release.yml` and publishes the files as a GitHub Release; locally nothing is uploaded. Per dev-setup.md, check `pack-app.sh`'s signing variable name against `.github/workflows/release.yml` before the first CI release.
