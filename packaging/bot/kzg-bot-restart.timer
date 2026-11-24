@@ -1,0 +1,13 @@
+# Optional: restarts the Kzg bot every day at a quiet hour, so a slow leak could never add up.
+# Not enabled by default. Change OnCalendar to an hour when no war is on (the host's local time).
+# Enable with: sudo systemctl enable --now kzg-bot-restart.timer
+[Unit]
+Description=Restart the Kzg bot daily
+
+[Timer]
+OnCalendar=*-*-* 05:00:00
+Persistent=false
+RandomizedDelaySec=0
+
+[Install]
+WantedBy=timers.target

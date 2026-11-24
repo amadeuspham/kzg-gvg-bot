@@ -1,0 +1,33 @@
+# systemd unit for the Kzg bot, installed by docs/guides/host.md.
+# Edit User and the two paths to match where you unpacked the bot and where its data lives.
+[Unit]
+Description=Kzg guild-war relay bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=kzg
+WorkingDirectory=/opt/kzg-bot
+ExecStart=/opt/kzg-bot/Kzg.Bot --data-dir /var/lib/kzg
+# SIGTERM makes every relay bot leave voice and sign out before the process ends.
+KillSignal=SIGTERM
+TimeoutStopSec=20
+Restart=on-failure
+RestartSec=5
+
+# Safety net: the bot holds about 150 MB in a full war. At 512 MB the kernel kills it, and with the default
+# OOMPolicy=stop that counts as a failure, so Restart=on-failure starts it again. No swap, so it fails
+# fast instead of stuttering the audio. Raise it if journalctl shows "Failed with result 'oom-kill'".
+MemoryMax=512M
+MemorySwapMax=0
+
+# The bot needs no privileges and writes only to its data folder.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/kzg
+
+[Install]
+WantedBy=multi-user.target

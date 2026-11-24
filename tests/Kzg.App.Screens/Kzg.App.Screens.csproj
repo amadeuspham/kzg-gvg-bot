@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Not a test run and not part of scripts/check.sh: it draws the real window in every situation into
+    .data/screens/ so a person can look at it. Run it with the command:
+    dotnet run (project tests/Kzg.App.Screens, configuration Release)
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless" Version="12.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Kzg.App/Kzg.App.csproj" />
+  </ItemGroup>
+
+</Project>

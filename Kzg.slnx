@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Kzg.Protocol/Kzg.Protocol.csproj" />
+    <Project Path="src/Kzg.Core/Kzg.Core.csproj" />
+    <Project Path="src/Kzg.Audio/Kzg.Audio.csproj" />
+    <Project Path="src/Kzg.Discord/Kzg.Discord.csproj" />
+    <Project Path="src/Kzg.Bot/Kzg.Bot.csproj" />
+    <Project Path="src/Kzg.App/Kzg.App.csproj" />
+    <Project Path="src/Kzg.App.Input/Kzg.App.Input.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Kzg.Protocol.Tests/Kzg.Protocol.Tests.csproj" />
+    <Project Path="tests/Kzg.Core.Tests/Kzg.Core.Tests.csproj" />
+    <Project Path="tests/Kzg.Audio.Tests/Kzg.Audio.Tests.csproj" />
+    <Project Path="tests/Kzg.Discord.Tests/Kzg.Discord.Tests.csproj" />
+    <Project Path="tests/Kzg.Bot.Tests/Kzg.Bot.Tests.csproj" />
+    <Project Path="tests/Kzg.App.Tests/Kzg.App.Tests.csproj" />
+    <Project Path="tests/Kzg.App.Input.Tests/Kzg.App.Input.Tests.csproj" />
+    <Project Path="tests/Kzg.App.Screens/Kzg.App.Screens.csproj" />
+  </Folder>
+</Solution>

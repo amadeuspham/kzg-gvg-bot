@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <!-- The app version: the only place it is written. -->
+    <Version>0.1.0</Version>
+    <Product>Kzg</Product>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+</Project>

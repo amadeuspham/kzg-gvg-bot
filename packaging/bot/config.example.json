@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "guildId": null,
+  "adminRoleId": null,
+  "publicHost": "kzg.example.com",
+  "alertsChannelId": null,
+  "listen": "127.0.0.1:7878",
+  "oauth": {
+    "enabled": false,
+    "clientId": null
+  },
+  "groups": {
+    "attack": { "channels": [] },
+    "defense": { "channels": [] }
+  },
+  "bots": [
+    { "tokenRef": "relay1", "primary": true },
+    { "tokenRef": "relay2", "primary": false },
+    { "tokenRef": "relay3", "primary": false },
+    { "tokenRef": "relay4", "primary": false },
+    { "tokenRef": "relay5", "primary": false },
+    { "tokenRef": "relay6", "primary": false }
+  ]
+}

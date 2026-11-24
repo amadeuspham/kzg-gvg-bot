@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least privilege: CI only reads the repo. No secrets are used anywhere in this file.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: gate (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos
+            os: macos-15          # Apple Silicon
+          - name: windows
+            os: windows-2025
+          - name: linux
+            os: ubuntu-24.04      # libdave needs glibc 2.38 or newer; 22.04 is too old
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # scripts/dotnet.sh picks the SDK from DOTNET_ROOT, which setup-dotnet sets.
+      - name: Gate (build, format, tests, coverage)
+        env:
+          # Live (Discord) and load tests stay skipped: they need KZG_LIVE=1 / KZG_LOAD=1 and secrets.
+          KZG_LIVE: ""
+          KZG_LOAD: ""
+        run: scripts/check.sh

@@ -1,0 +1,5 @@
+# Large generated output: rebuild with the command in README.md
+publish/
+bin/
+obj/
+*.log

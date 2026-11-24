@@ -1,0 +1,49 @@
+# Build output
+bin/
+obj/
+publish/
+TestResults/
+coverage*.json
+coverage*.xml
+*.user
+.vs/
+
+# Packaging output (also ignored by packaging/.gitignore)
+packaging/out/
+
+# Spikes: throwaway; only their sources and notes are tracked
+spike/**/models/
+spike/**/audio/
+spike/**/bin/
+spike/**/obj/
+spike/**/publish/
+spike/**/*.log
+
+# Local settings, identities and secrets: never committed. Only the examples are tracked.
+.data/*
+!.data/*.example.json
+*.local.*
+.env
+.env.*
+!.env.example
+packaging/docker/secrets.env
+
+# Signing material and keys
+*.p12
+*.pfx
+*.pem
+*.key
+*.snk
+
+# Editors and OS
+.DS_Store
+.idea/
+*.swp
+Thumbs.db
+
+# Claude Code: personal settings stay local, shared project settings are tracked
+.claude/settings.local.json
+.claude/worktrees/
+
+# A global ignore (*.core) hides the Kzg.Core project
+!src/Kzg.Core/

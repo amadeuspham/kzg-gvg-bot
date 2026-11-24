@@ -1,0 +1,320 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Kzg.App.App"
+             Name="KZG Broadcast"
+             RequestedThemeVariant="Default">
+  <Application.Resources>
+    <ResourceDictionary>
+      <FontFamily x:Key="IconFont">avares://Kzg.App/Assets/Fonts#tabler-icons</FontFamily>
+
+      <ResourceDictionary.ThemeDictionaries>
+        <!-- Light: fill is the ramp's 50, title its 800, subtitle its 600. -->
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="WindowBg" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="PanelBg" Color="#F1EFE8" />
+          <SolidColorBrush x:Key="TextPrimary" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="TextSecondary" Color="#5F5E5A" />
+          <SolidColorBrush x:Key="TextHint" Color="#888780" />
+          <SolidColorBrush x:Key="Hairline" Color="#B3B4B2A9" />
+          <SolidColorBrush x:Key="InkBg" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="InkFg" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="SolidBlue" Color="#185FA5" />
+          <SolidColorBrush x:Key="OnSolidBlue" Color="#FFFFFF" />
+
+          <SolidColorBrush x:Key="GreenFill" Color="#EAF3DE" />
+          <SolidColorBrush x:Key="GreenTitle" Color="#27500A" />
+          <SolidColorBrush x:Key="GreenSub" Color="#3B6D11" />
+          <SolidColorBrush x:Key="BlueFill" Color="#E6F1FB" />
+          <SolidColorBrush x:Key="BlueTitle" Color="#0C447C" />
+          <SolidColorBrush x:Key="BlueSub" Color="#185FA5" />
+          <SolidColorBrush x:Key="AmberFill" Color="#FAEEDA" />
+          <SolidColorBrush x:Key="AmberTitle" Color="#633806" />
+          <SolidColorBrush x:Key="AmberSub" Color="#854F0B" />
+          <SolidColorBrush x:Key="RedFill" Color="#FCEBEB" />
+          <SolidColorBrush x:Key="RedTitle" Color="#791F1F" />
+          <SolidColorBrush x:Key="RedSub" Color="#A32D2D" />
+          <SolidColorBrush x:Key="AmberEdge" Color="#EF9F27" />
+          <SolidColorBrush x:Key="RedSolid" Color="#A32D2D" />
+          <SolidColorBrush x:Key="OnRed" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="RedEdgeOff" Color="#66A32D2D" />
+
+          <!-- Fluent's own names for the controls we keep: inputs and the switch. -->
+          <SolidColorBrush x:Key="TextControlBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="TextControlBorderBrush" Color="#B3B4B2A9" />
+          <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#888780" />
+          <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#185FA5" />
+          <SolidColorBrush x:Key="TextControlForeground" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#888780" />
+          <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#888780" />
+          <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#888780" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#185FA5" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#185FA5" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#0C447C" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOffPressed" Color="#F1EFE8" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#B4B2A9" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#888780" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="#888780" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#185FA5" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#185FA5" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="#0C447C" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#888780" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="#5F5E5A" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPressed" Color="#5F5E5A" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="#FFFFFF" />
+        </ResourceDictionary>
+
+        <!-- Dark: fill is the ramp's 800, title its 100, subtitle its 200. -->
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="WindowBg" Color="#1F1F1E" />
+          <SolidColorBrush x:Key="PanelBg" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="TextPrimary" Color="#F1EFE8" />
+          <SolidColorBrush x:Key="TextSecondary" Color="#B4B2A9" />
+          <SolidColorBrush x:Key="TextHint" Color="#888780" />
+          <SolidColorBrush x:Key="Hairline" Color="#4DB4B2A9" />
+          <SolidColorBrush x:Key="InkBg" Color="#F1EFE8" />
+          <SolidColorBrush x:Key="InkFg" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="SolidBlue" Color="#85B7EB" />
+          <SolidColorBrush x:Key="OnSolidBlue" Color="#2C2C2A" />
+
+          <SolidColorBrush x:Key="GreenFill" Color="#27500A" />
+          <SolidColorBrush x:Key="GreenTitle" Color="#C0DD97" />
+          <SolidColorBrush x:Key="GreenSub" Color="#97C459" />
+          <SolidColorBrush x:Key="BlueFill" Color="#0C447C" />
+          <SolidColorBrush x:Key="BlueTitle" Color="#B5D4F4" />
+          <SolidColorBrush x:Key="BlueSub" Color="#85B7EB" />
+          <SolidColorBrush x:Key="AmberFill" Color="#633806" />
+          <SolidColorBrush x:Key="AmberTitle" Color="#FAC775" />
+          <SolidColorBrush x:Key="AmberSub" Color="#EF9F27" />
+          <SolidColorBrush x:Key="RedFill" Color="#791F1F" />
+          <SolidColorBrush x:Key="RedTitle" Color="#F7C1C1" />
+          <SolidColorBrush x:Key="RedSub" Color="#F09595" />
+          <SolidColorBrush x:Key="AmberEdge" Color="#EF9F27" />
+          <SolidColorBrush x:Key="RedSolid" Color="#F09595" />
+          <SolidColorBrush x:Key="OnRed" Color="#1F1F1E" />
+          <SolidColorBrush x:Key="RedEdgeOff" Color="#66F09595" />
+
+          <SolidColorBrush x:Key="TextControlBackground" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="TextControlBorderBrush" Color="#4DB4B2A9" />
+          <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#888780" />
+          <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#85B7EB" />
+          <SolidColorBrush x:Key="TextControlForeground" Color="#F1EFE8" />
+          <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#F1EFE8" />
+          <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#F1EFE8" />
+          <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#888780" />
+          <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#888780" />
+          <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#888780" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#85B7EB" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#85B7EB" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#B5D4F4" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="#2C2C2A" />
+          <SolidColorBrush x:Key="ToggleSwitchFillOffPressed" Color="#1F1F1E" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#888780" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#B4B2A9" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="#B4B2A9" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#85B7EB" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#85B7EB" />
+          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="#B5D4F4" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#B4B2A9" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="#F1EFE8" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPressed" Color="#F1EFE8" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#1F1F1E" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#1F1F1E" />
+          <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="#1F1F1E" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+
+    <!-- Text: Inter at 400 and 500 only. Title 16, body 13 to 14, hints 12. -->
+    <Style Selector="TextBlock.title">
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+    <Style Selector="TextBlock.sub">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.secondary">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.hint">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource TextHint}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.icon">
+      <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Panels and tinted cards: one corner radius, a hairline, no shadow. -->
+    <Style Selector="Border.panel">
+      <Setter Property="Background" Value="{DynamicResource PanelBg}" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Padding" Value="14" />
+    </Style>
+    <Style Selector="Border.tint">
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Padding" Value="14" />
+    </Style>
+    <Style Selector="Border.rule">
+      <Setter Property="Height" Value="1" />
+      <Setter Property="Background" Value="{DynamicResource Hairline}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- The four tones. Fill, title and subtitle come from the same ramp. -->
+    <Style Selector="Border.green"><Setter Property="Background" Value="{DynamicResource GreenFill}" /></Style>
+    <Style Selector="Border.blue"><Setter Property="Background" Value="{DynamicResource BlueFill}" /></Style>
+    <Style Selector="Border.amber"><Setter Property="Background" Value="{DynamicResource AmberFill}" /></Style>
+    <Style Selector="Border.red"><Setter Property="Background" Value="{DynamicResource RedFill}" /></Style>
+
+    <Style Selector="Border.green TextBlock"><Setter Property="Foreground" Value="{DynamicResource GreenTitle}" /></Style>
+    <Style Selector="Border.blue TextBlock"><Setter Property="Foreground" Value="{DynamicResource BlueTitle}" /></Style>
+    <Style Selector="Border.amber TextBlock"><Setter Property="Foreground" Value="{DynamicResource AmberTitle}" /></Style>
+    <Style Selector="Border.red TextBlock"><Setter Property="Foreground" Value="{DynamicResource RedTitle}" /></Style>
+    <Style Selector="Border.green TextBlock.sub"><Setter Property="Foreground" Value="{DynamicResource GreenSub}" /></Style>
+    <Style Selector="Border.blue TextBlock.sub"><Setter Property="Foreground" Value="{DynamicResource BlueSub}" /></Style>
+    <Style Selector="Border.amber TextBlock.sub"><Setter Property="Foreground" Value="{DynamicResource AmberSub}" /></Style>
+    <Style Selector="Border.red TextBlock.sub"><Setter Property="Foreground" Value="{DynamicResource RedSub}" /></Style>
+    <Style Selector="Border.green TextBlock.hint"><Setter Property="Foreground" Value="{DynamicResource GreenSub}" /></Style>
+    <Style Selector="Border.blue TextBlock.hint"><Setter Property="Foreground" Value="{DynamicResource BlueSub}" /></Style>
+    <Style Selector="Border.amber TextBlock.hint"><Setter Property="Foreground" Value="{DynamicResource AmberSub}" /></Style>
+    <Style Selector="Border.red TextBlock.hint"><Setter Property="Foreground" Value="{DynamicResource RedSub}" /></Style>
+
+    <!-- Buttons. Fluent restyles every state on the presenter, so each state is restated here. -->
+    <Style Selector="Button.pill, Button.outline, Button.quiet, Button.keycap">
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+
+    <!-- Ink pill: the one strong button on a screen. -->
+    <Style Selector="Button.pill">
+      <Setter Property="Background" Value="{DynamicResource InkBg}" />
+      <Setter Property="Foreground" Value="{DynamicResource InkFg}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="22" />
+      <Setter Property="Padding" Value="18,10" />
+    </Style>
+    <Style Selector="Button.pill:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource InkBg}" />
+      <Setter Property="Foreground" Value="{DynamicResource InkFg}" />
+      <Setter Property="Opacity" Value="0.86" />
+    </Style>
+    <Style Selector="Button.pill:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource InkBg}" />
+      <Setter Property="Foreground" Value="{DynamicResource InkFg}" />
+      <Setter Property="Opacity" Value="0.72" />
+    </Style>
+    <Style Selector="Button.pill:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource InkBg}" />
+      <Setter Property="Foreground" Value="{DynamicResource InkFg}" />
+      <Setter Property="Opacity" Value="0.4" />
+    </Style>
+
+    <!-- Outlined pill: a small second action, tinted when it sits on a tinted card. -->
+    <Style Selector="Button.outline">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TextHint}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="16" />
+      <Setter Property="Padding" Value="12,6" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="Border.green Button.outline"><Setter Property="Foreground" Value="{DynamicResource GreenTitle}" /><Setter Property="BorderBrush" Value="{DynamicResource GreenSub}" /></Style>
+    <Style Selector="Border.blue Button.outline"><Setter Property="Foreground" Value="{DynamicResource BlueTitle}" /><Setter Property="BorderBrush" Value="{DynamicResource BlueSub}" /></Style>
+    <Style Selector="Border.amber Button.outline"><Setter Property="Foreground" Value="{DynamicResource AmberTitle}" /><Setter Property="BorderBrush" Value="{DynamicResource AmberSub}" /></Style>
+    <Style Selector="Border.red Button.outline"><Setter Property="Foreground" Value="{DynamicResource RedTitle}" /><Setter Property="BorderBrush" Value="{DynamicResource RedSub}" /></Style>
+    <Style Selector="Button.outline:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Hairline}" />
+      <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+      <Setter Property="BorderBrush" Value="{Binding $parent[Button].BorderBrush}" />
+    </Style>
+    <Style Selector="Button.outline:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Hairline}" />
+      <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+      <Setter Property="BorderBrush" Value="{Binding $parent[Button].BorderBrush}" />
+      <Setter Property="Opacity" Value="0.8" />
+    </Style>
+
+    <!-- Quiet text button: footer actions and settings rows. -->
+    <Style Selector="Button.quiet">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="16" />
+      <Setter Property="Padding" Value="10,7" />
+    </Style>
+    <Style Selector="Button.quiet:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource PanelBg}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+    </Style>
+    <Style Selector="Button.quiet:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource PanelBg}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+      <Setter Property="Opacity" Value="0.8" />
+    </Style>
+    <Style Selector="Button.quiet.danger"><Setter Property="Foreground" Value="{DynamicResource RedSub}" /></Style>
+    <Style Selector="Button.quiet.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource RedSub}" /></Style>
+
+    <!-- Keycap: the key as a pill, window-colored, with a hairline. -->
+    <Style Selector="Button.keycap">
+      <Setter Property="Background" Value="{DynamicResource WindowBg}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Hairline}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="22" />
+      <Setter Property="Padding" Value="16,8" />
+    </Style>
+    <Style Selector="Button.keycap:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource WindowBg}" />
+      <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TextHint}" />
+    </Style>
+    <Style Selector="Button.keycap:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource WindowBg}" />
+      <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource TextHint}" />
+      <Setter Property="Opacity" Value="0.8" />
+    </Style>
+    <Style Selector="Button.keycap.capturing /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource AmberEdge}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+
+    <!-- Round input. -->
+    <Style Selector="TextBox.round">
+      <Setter Property="CornerRadius" Value="20" />
+      <Setter Property="Padding" Value="14,0" />
+      <Setter Property="MinHeight" Value="38" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+  </Application.Styles>
+</Application>

@@ -1,0 +1,52 @@
+# The Kzg bot with Caddy in front for automatic HTTPS, on a server with Docker. docs/guides/host.md has the steps:
+#   1. Point your domain's DNS at this server and forward ports 80 and 443 from your router to it.
+#   2. Put the domain in kzg.env.
+#   3. In this folder: docker compose up -d
+#   4. docker compose logs bot   prints the setup link; open it to paste the bot tokens.
+# Caddy needs ports 80 and 443 to itself. If this server already runs a web server there, run only the
+# bot (docker compose up -d bot) and point your web server at 127.0.0.1:7878 instead.
+name: kzg
+
+services:
+  bot:
+    build:
+      context: ../..
+      dockerfile: packaging/docker/Dockerfile
+    image: kzg-bot
+    restart: unless-stopped
+    env_file:
+      - kzg.env
+      # KZG_SECRET_* lines, such as the OAuth client secret: git-ignored, chmod 600, and fine missing or empty.
+      # kzg.env is part of the project and readable by anyone, so secrets never go there.
+      - path: secrets.env
+        required: false
+    # The safety net: a full war needs about 150 MB. Past 512 MB the bot is killed and started again.
+    mem_limit: 512m
+    memswap_limit: 512m
+    # This computer only: for the setup link (http://localhost:7878/setup?key=...). Caddy is the way in from outside.
+    ports: ["127.0.0.1:7878:7878"]
+    # config.json, secrets.json and devices.json. Back this volume up.
+    volumes: ["kzg-data:/data"]
+    # SIGTERM makes every relay bot leave voice and sign out before the container stops.
+    stop_grace_period: 20s
+    logging: &logs
+      # Docker keeps a container's log forever unless told: three files of 10 MB at most.
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    env_file: kzg.env
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [bot]
+    logging: *logs
+
+volumes:
+  kzg-data:
+  caddy-data:
+  caddy-config:

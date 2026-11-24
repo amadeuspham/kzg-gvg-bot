@@ -1,0 +1,116 @@
+name: Release (inert)
+
+# Inert on purpose: manual trigger only, and every job stops at the first step until the
+# signing secrets exist. Nothing here runs on push or tag. See docs/guides/dev-setup.md.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release; must equal <Version> in Directory.Build.props
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-24.04
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          # Secrets are exposed only through env, never echoed. Empty on a repo without them.
+          MAC_CERT_P12: ${{ secrets.KZG_MAC_CERT_P12 }}
+        run: |
+          if [ -z "$MAC_CERT_P12" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Signing secrets are not configured; release is inert."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  app-macos:
+    needs: guard
+    if: needs.guard.outputs.ready == 'true'
+    runs-on: macos-15
+    timeout-minutes: 60
+    permissions:
+      contents: write   # attach release assets
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Verify version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: grep -qF "<Version>${VERSION}</Version>" Directory.Build.props
+      - name: Gate
+        run: scripts/check.sh
+      - name: Import signing certificate
+        env:
+          MAC_CERT_P12: ${{ secrets.KZG_MAC_CERT_P12 }}
+          MAC_CERT_PASSWORD: ${{ secrets.KZG_MAC_CERT_PASSWORD }}
+        run: |
+          keychain="$RUNNER_TEMP/kzg.keychain-db"
+          security create-keychain -p "$MAC_CERT_PASSWORD" "$keychain"
+          security set-keychain-settings -lut 3600 "$keychain"
+          security unlock-keychain -p "$MAC_CERT_PASSWORD" "$keychain"
+          echo "$MAC_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$keychain" -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$MAC_CERT_PASSWORD" "$keychain"
+          security list-keychains -d user -s "$keychain"
+          rm -f "$RUNNER_TEMP/cert.p12"
+      - name: Pack app
+        env:
+          # The identity inside the .p12. The variable name must match what packaging/pack-app.sh reads
+          # (the packaging owner adds the signing hook); check it before the first real release.
+          KZG_SIGN_IDENTITY: ${{ secrets.KZG_MAC_SIGN_IDENTITY }}
+        run: packaging/pack-app.sh --rid osx-arm64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-osx-arm64
+          path: packaging/out/**
+
+  app-windows:
+    needs: guard
+    if: needs.guard.outputs.ready == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Gate
+        run: scripts/check.sh
+      - name: Pack app
+        run: packaging/pack-app.sh --rid win-x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-win-x64
+          path: packaging/out/**
+
+  bot:
+    needs: guard
+    if: needs.guard.outputs.ready == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Pack bot
+        run: |
+          packaging/publish-bot.sh --rid linux-x64
+          packaging/publish-bot.sh --rid win-x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bot
+          path: packaging/out/**

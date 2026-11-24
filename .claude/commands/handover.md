@@ -1,0 +1,1 @@
+Write a short handover for the next machine or session: branch and uncommitted state, what is done, what is next, checks run (with results), checks that need a person or device, and any bot that may still be in voice. Put it in the chat only; never include secret values.

@@ -1,0 +1,4 @@
+# Everything the scripts here build or fetch; none of it is committed.
+out/
+.cache/
+.tools/

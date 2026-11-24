@@ -1,0 +1,4 @@
+# Caddy gets and renews the HTTPS certificate for the domain in kzg.env by itself, and passes WebSockets on.
+{$KZG_PUBLIC_HOST} {
+	reverse_proxy bot:7878
+}

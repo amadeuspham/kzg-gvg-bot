@@ -1,0 +1,446 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Kzg.App.ViewModels"
+        x:Class="Kzg.App.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="KZG Broadcast"
+        Icon="/Assets/icon-256.png"
+        Width="420" Height="560" CanResize="False"
+        FontSize="13"
+        Background="{DynamicResource WindowBg}"
+        Foreground="{DynamicResource TextPrimary}">
+  <Window.Styles>
+    <!-- The broadcast panel: gray at rest, solid blue while the key is held, dashed and quiet while it can't work. -->
+    <Style Selector="Border.cast TextBlock.lead">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.cast.held"><Setter Property="Background" Value="{DynamicResource SolidBlue}" /></Style>
+    <Style Selector="Border.cast.held TextBlock.lead"><Setter Property="Foreground" Value="{DynamicResource OnSolidBlue}" /></Style>
+    <Style Selector="Border.cast.offline"><Setter Property="Background" Value="Transparent" /></Style>
+    <Style Selector="Border.cast.offline TextBlock.lead"><Setter Property="Foreground" Value="{DynamicResource TextHint}" /></Style>
+    <Style Selector="Border.cast.offline Button.keycap"><Setter Property="Foreground" Value="{DynamicResource TextHint}" /></Style>
+    <Style Selector="Border.cast.offline Button.keycap:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource TextHint}" /></Style>
+    <Style Selector="Border.cast TextBlock.tail">
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="LineHeight" Value="18" />
+      <Setter Property="MinHeight" Value="36" />
+    </Style>
+    <!-- No input bound: the card goes quiet, and its chip says "Not set" in hint gray. -->
+    <Style Selector="Border.cast.unset TextBlock.lead"><Setter Property="Foreground" Value="{DynamicResource TextHint}" /></Style>
+    <Style Selector="Button.keycap.none"><Setter Property="Foreground" Value="{DynamicResource TextHint}" /></Style>
+    <Style Selector="Button.keycap TextBlock.keyname">
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontWeight" Value="Medium" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.keycap.capturing TextBlock.keyname"><Setter Property="FontSize" Value="15" /></Style>
+    <Style Selector="Button.keycap.small">
+      <Setter Property="Padding" Value="11,5" />
+    </Style>
+    <!-- The row's chip stays small, so a long input name never squeezes the words beside it. -->
+    <Style Selector="Button.keycap.small TextBlock.keyname">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="MaxWidth" Value="120" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style Selector="Button.keycap.small.capturing TextBlock.keyname"><Setter Property="FontSize" Value="13" /></Style>
+    <!-- Clear and Cancel while an input is being picked. -->
+    <Style Selector="StackPanel.pick">
+      <Setter Property="Orientation" Value="Horizontal" />
+      <Setter Property="Spacing" Value="8" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="MinHeight" Value="36" />
+    </Style>
+
+    <!-- The open mic row: a red edge at rest, a solid red edge and mic while it is on. -->
+    <Style Selector="Border.mic">
+      <Setter Property="BorderBrush" Value="{DynamicResource RedEdgeOff}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Border.mic.on">
+      <Setter Property="BorderBrush" Value="{DynamicResource RedSolid}" />
+      <Setter Property="BorderThickness" Value="1.5" />
+      <Setter Property="Padding" Value="13.5,11.5" />
+    </Style>
+    <Style Selector="Border.mic Border.micdot TextBlock.icon">
+      <Setter Property="FontSize" Value="22" />
+      <Setter Property="Foreground" Value="{DynamicResource RedSub}" />
+    </Style>
+    <Style Selector="Border.mic.on Border.micdot"><Setter Property="Background" Value="{DynamicResource RedSolid}" /></Style>
+    <Style Selector="Border.mic.on Border.micdot TextBlock.icon">
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="Foreground" Value="{DynamicResource OnRed}" />
+    </Style>
+    <Style Selector="Border.mic TextBlock.micline">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="LineHeight" Value="17" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="Border.mic.on TextBlock.micline"><Setter Property="Foreground" Value="{DynamicResource RedSub}" /></Style>
+    <Style Selector="Border.mic.on TextBlock.micline.lead"><Setter Property="FontWeight" Value="Medium" /></Style>
+    <Style Selector="ToggleSwitch">
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Margin" Value="0" />
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="*,Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="14" Spacing="12">
+
+        <!-- The status badge: a tinted card. Icon, words and color each say the same thing. -->
+        <Border Classes="tint" IsVisible="{Binding ShowStatus}"
+                Classes.green="{Binding IsToneGreen}"
+                Classes.blue="{Binding IsToneBlue}"
+                Classes.amber="{Binding IsToneAmber}"
+                Classes.red="{Binding IsToneRed}"
+                AutomationProperties.Name="{Binding BadgeLabel}">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+            <Border Width="38" Height="38" CornerRadius="19" Background="{DynamicResource WindowBg}" VerticalAlignment="Center">
+              <TextBlock Classes="icon" Text="{Binding BadgeIcon}" FontSize="22" />
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+              <TextBlock Classes="title" Text="{Binding BadgeLabel}" TextWrapping="Wrap" />
+              <TextBlock Classes="sub" Text="{Binding BadgeDetail}" />
+            </StackPanel>
+            <Button Grid.Column="2" Classes="outline" Content="Retry now" VerticalAlignment="Center"
+                    Command="{Binding RetryNowCommand}" IsVisible="{Binding CanRetryNow}" />
+            <Button Grid.Column="2" Classes="outline" Content="Reconnect" VerticalAlignment="Center"
+                    Command="{Binding ReconnectCommand}" IsVisible="{Binding CanReconnect}" />
+          </Grid>
+        </Border>
+
+        <!-- Warnings, in words: amber, or red when something stopped working. -->
+        <ItemsControl ItemsSource="{Binding WarningNotes}" IsVisible="{Binding ShowWarnings}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Spacing="8" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:WarningNote">
+              <Border Classes="tint" Padding="12,10" Classes.amber="{Binding IsAmber}" Classes.red="{Binding IsError}" Classes.blue="{Binding IsInfo}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <TextBlock Classes="icon" Text="{Binding Icon}" FontSize="18" VerticalAlignment="Top" Margin="0,1,0,0" />
+                  <StackPanel Grid.Column="1" Spacing="8">
+                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                    <Button Classes="outline" HorizontalAlignment="Left" Content="{Binding ActionLabel}" Command="{Binding Action}"
+                            IsVisible="{Binding Action, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Not linked yet: one way or the other, not two required steps. -->
+        <StackPanel Spacing="12" IsVisible="{Binding ShowLinkScreen}">
+          <Border Classes="panel">
+            <StackPanel Spacing="8">
+              <Button Classes="pill" HorizontalAlignment="Stretch" Command="{Binding SignInWithDiscordCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                  <TextBlock Classes="icon" Text="{x:Static vm:Icons.BrandDiscord}" FontSize="18" />
+                  <TextBlock Text="Sign in with Discord" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <TextBlock Classes="hint" Text="Opens your browser" HorizontalAlignment="Center" />
+            </StackPanel>
+          </Border>
+
+          <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="12">
+            <Border Classes="rule" />
+            <TextBlock Grid.Column="1" Classes="hint" Text="or" />
+            <Border Grid.Column="2" Classes="rule" />
+          </Grid>
+
+          <Border Classes="panel">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="label" Text="Paste a code" />
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBox Classes="round" Text="{Binding CodeText, Mode=TwoWay}" PlaceholderText="KZG1.…" AutomationProperties.Name="Connect code" />
+                <Button Grid.Column="1" Classes="pill" Content="Link" Command="{Binding LinkWithCodeCommand}" />
+              </Grid>
+              <TextBlock Classes="hint" Text="Type /connect in Discord to get one" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="panel" IsVisible="{Binding ShowServerField}">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="label" Text="Server" />
+              <TextBox Classes="round" Text="{Binding ServerHostText, Mode=TwoWay}" PlaceholderText="gvg.example.com" AutomationProperties.Name="Server address" />
+            </StackPanel>
+          </Border>
+
+          <TextBlock Text="{Binding LinkMessage}" IsVisible="{Binding HasLinkMessage}" TextWrapping="Wrap" Foreground="{DynamicResource RedSub}" />
+
+          <Border Classes="panel" IsVisible="{Binding IsLinkBusy}">
+            <StackPanel Spacing="8">
+              <ProgressBar IsIndeterminate="True" />
+              <Button Classes="quiet" Content="Cancel" Command="{Binding CancelLinkCommand}" HorizontalAlignment="Center" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- Linked: the whole day-to-day window. -->
+        <StackPanel Spacing="12" IsVisible="{Binding ShowMainView}">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+              <Border Grid.Column="0" Classes="panel cast" Padding="12,20"
+                      Classes.held="{Binding ShowBroadcastHeld}"
+                      Classes.offline="{Binding BroadcastUnavailable}"
+                      Classes.unset="{Binding BroadcastIsUnset}">
+                <Grid>
+                  <Rectangle IsVisible="{Binding BroadcastUnavailable}" IsHitTestVisible="False" RadiusX="14" RadiusY="14"
+                             Stroke="{DynamicResource TextHint}" StrokeThickness="1" StrokeDashArray="4,4" Margin="-12,-20" />
+                  <StackPanel Spacing="10" HorizontalAlignment="Center">
+                    <TextBlock Classes="lead" Text="{Binding BroadcastLead}" />
+                    <Button Classes="keycap" HorizontalAlignment="Center"
+                            Classes.capturing="{Binding IsCapturingBroadcast}"
+                            Classes.none="{Binding BroadcastIsUnset}"
+                            Command="{Binding ChangeBroadcastCommand}"
+                            AutomationProperties.Name="{Binding BroadcastInputName, StringFormat='Broadcast to your team input: {0}'}">
+                      <!-- A grid, not a horizontal stack, so a long name such as a controller button wraps inside the card. -->
+                      <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Classes="icon" Text="{Binding BroadcastGlyph}" FontSize="20" Margin="0,0,8,0" IsVisible="{Binding BroadcastShowsGlyph}" />
+                        <TextBlock Grid.Column="1" Classes="keyname" Text="{Binding BroadcastInputName}" VerticalAlignment="Center" />
+                      </Grid>
+                    </Button>
+                    <TextBlock Classes="lead tail" Text="{Binding BroadcastTail}" IsVisible="{Binding ShowBroadcastTail}" />
+                    <StackPanel Classes="pick" IsVisible="{Binding IsCapturingBroadcast}">
+                      <Button Classes="outline" Content="Clear" Command="{Binding ClearBindingCommand}" />
+                      <Button Classes="outline" Content="Cancel" Command="{Binding CancelCaptureCommand}" />
+                    </StackPanel>
+                  </StackPanel>
+                </Grid>
+              </Border>
+              <Border Grid.Column="1" Classes="panel cast" Padding="12,20"
+                      Classes.held="{Binding ShowAllTeamsHeld}"
+                      Classes.offline="{Binding BroadcastUnavailable}"
+                      Classes.unset="{Binding AllTeamsIsUnset}">
+                <Grid>
+                  <Rectangle IsVisible="{Binding BroadcastUnavailable}" IsHitTestVisible="False" RadiusX="14" RadiusY="14"
+                             Stroke="{DynamicResource TextHint}" StrokeThickness="1" StrokeDashArray="4,4" Margin="-12,-20" />
+                  <StackPanel Spacing="10" HorizontalAlignment="Center">
+                    <TextBlock Classes="lead" Text="{Binding AllTeamsLead}" />
+                    <Button Classes="keycap" HorizontalAlignment="Center"
+                            Classes.capturing="{Binding IsCapturingAllTeams}"
+                            Classes.none="{Binding AllTeamsIsUnset}"
+                            Command="{Binding ChangeAllTeamsCommand}"
+                            AutomationProperties.Name="{Binding AllTeamsInputName, StringFormat='Broadcast to all teams input: {0}'}">
+                      <!-- A grid, not a horizontal stack, so a long name such as a controller button wraps inside the card. -->
+                      <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Classes="icon" Text="{Binding AllTeamsGlyph}" FontSize="20" Margin="0,0,8,0" IsVisible="{Binding AllTeamsShowsGlyph}" />
+                        <TextBlock Grid.Column="1" Classes="keyname" Text="{Binding AllTeamsInputName}" VerticalAlignment="Center" />
+                      </Grid>
+                    </Button>
+                    <TextBlock Classes="lead tail" Text="{Binding AllTeamsTail}" IsVisible="{Binding ShowAllTeamsTail}" />
+                    <StackPanel Classes="pick" IsVisible="{Binding IsCapturingAllTeams}">
+                      <Button Classes="outline" Content="Clear" Command="{Binding ClearBindingCommand}" />
+                      <Button Classes="outline" Content="Cancel" Command="{Binding CancelCaptureCommand}" />
+                    </StackPanel>
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </Grid>
+            <TextBlock Classes="hint" Text="{Binding BroadcastHint}" HorizontalAlignment="Center" TextAlignment="Center" />
+          </StackPanel>
+
+          <!-- Open mic: red-edged, because it stays live by itself. Every player has it. -->
+          <Border Classes="panel mic" Padding="14,12" Classes.on="{Binding OpenMicIsOn}">
+            <StackPanel Spacing="10">
+              <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                <Border Classes="micdot" Width="30" Height="30" CornerRadius="15" VerticalAlignment="Center">
+                  <TextBlock Classes="icon" Text="{x:Static vm:Icons.Microphone}" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                  <TextBlock Classes="label" Text="Open mic broadcast" TextWrapping="Wrap" />
+                  <TextBlock Classes="micline lead" Text="{Binding OpenMicSubtitle}" />
+                  <TextBlock Classes="micline" Text="{Binding OpenMicNote}" />
+                </StackPanel>
+                <Button Grid.Column="2" Classes="keycap small" VerticalAlignment="Center"
+                        Classes.capturing="{Binding IsCapturingOpenMic}"
+                        Classes.none="{Binding OpenMicKeyIsUnset}"
+                        Command="{Binding ChangeOpenMicCommand}"
+                        AutomationProperties.Name="{Binding OpenMicInputName, StringFormat='Open mic broadcast input: {0}'}">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Classes="icon" Text="{Binding OpenMicGlyph}" FontSize="15" Margin="0,0,6,0" IsVisible="{Binding OpenMicShowsGlyph}" />
+                    <TextBlock Classes="keyname" Text="{Binding OpenMicInputName}" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
+                <!-- Fluent keeps a 12 px gap for the switch's own label, which this one has none of. -->
+                <ToggleSwitch Grid.Column="3" Classes="red" OnContent="" OffContent="" VerticalAlignment="Center" Margin="0,0,-12,0"
+                              IsChecked="{Binding OpenMicIsOn, Mode=TwoWay}"
+                              IsEnabled="{Binding CanToggleOpenMic}"
+                              AutomationProperties.Name="Open mic broadcast">
+                  <ToggleSwitch.Resources>
+                    <ResourceDictionary>
+                      <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Light">
+                          <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#A32D2D" />
+                          <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#A32D2D" />
+                          <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#791F1F" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#A32D2D" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#A32D2D" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="#791F1F" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#BFA32D2D" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#A32D2D" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="#A32D2D" />
+                          <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#D9A32D2D" />
+                          <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="#A32D2D" />
+                          <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPressed" Color="#A32D2D" />
+                        </ResourceDictionary>
+                        <ResourceDictionary x:Key="Dark">
+                          <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#F09595" />
+                          <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#F09595" />
+                          <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#F7C1C1" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#F09595" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#F09595" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="#F7C1C1" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#BFF09595" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#F09595" />
+                          <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="#F09595" />
+                          <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#D9F09595" />
+                          <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="#F09595" />
+                          <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPressed" Color="#F09595" />
+                        </ResourceDictionary>
+                      </ResourceDictionary.ThemeDictionaries>
+                    </ResourceDictionary>
+                  </ToggleSwitch.Resources>
+                </ToggleSwitch>
+              </Grid>
+              <!-- While its input is being picked: the same two buttons as on a key card. -->
+              <StackPanel Classes="pick" HorizontalAlignment="Right" IsVisible="{Binding IsCapturingOpenMic}">
+                <Button Classes="outline" Content="Clear" Command="{Binding ClearBindingCommand}" />
+                <Button Classes="outline" Content="Cancel" Command="{Binding CancelCaptureCommand}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- Settings: its own page in place of the main view, so the window keeps its size. -->
+        <StackPanel Spacing="10" IsVisible="{Binding ShowSettingsPage}">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+            <Button Classes="quiet" Command="{Binding BackCommand}" AutomationProperties.Name="Back">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Classes="icon" Text="{x:Static vm:Icons.ChevronLeft}" FontSize="16" />
+                <TextBlock Text="Back" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+            <TextBlock Grid.Column="1" Classes="label" Text="Settings" VerticalAlignment="Center" />
+          </Grid>
+          <Border Classes="rule" />
+          <StackPanel Margin="10,0">
+            <TextBlock Classes="label" Text="{Binding LinkedAs}" />
+            <TextBlock Classes="hint" Text="{Binding ServerLine}" />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,Auto" Margin="10,0">
+            <TextBlock Text="Alert when disconnected" VerticalAlignment="Center" />
+            <ToggleSwitch Grid.Column="1" OnContent="" OffContent="" IsChecked="{Binding NotifyOnDisconnect, Mode=TwoWay}"
+                          AutomationProperties.Name="Alert when disconnected" />
+          </Grid>
+
+          <Grid ColumnDefinitions="*,Auto" Margin="10,0" IsVisible="{Binding ShowOpenAtLogin}">
+            <TextBlock Text="Open at login" VerticalAlignment="Center" />
+            <ToggleSwitch Grid.Column="1" OnContent="" OffContent="" IsChecked="{Binding OpenAtLogin, Mode=TwoWay}"
+                          AutomationProperties.Name="Open at login" />
+          </Grid>
+
+          <Grid ColumnDefinitions="*,Auto" Margin="10,0" IsVisible="{Binding ShowUpdates}">
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="Updates" />
+              <TextBlock Classes="hint" Text="{Binding UpdateStatusText}" />
+            </StackPanel>
+            <Button Grid.Column="1" Classes="outline" Content="Check now" Command="{Binding CheckForUpdatesCommand}"
+                    IsEnabled="{Binding CanCheckForUpdates}" VerticalAlignment="Center" />
+          </Grid>
+
+          <Button Classes="quiet" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                  Command="{Binding ToggleInputHelpCommand}">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+              <TextBlock Classes="icon" Text="{x:Static vm:Icons.Keyboard}" FontSize="16" />
+              <TextBlock Grid.Column="1" Text="Keys not working in game?" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="2" Classes="icon" Text="{Binding InputHelpChevron}" FontSize="16" />
+            </Grid>
+          </Button>
+
+          <StackPanel Spacing="8" IsVisible="{Binding ShowInputHelp}">
+            <TextBlock Classes="secondary" Margin="10,0" Text="{Binding InputStatusText}" />
+
+            <Border Classes="tint" IsVisible="{Binding IsMac}" Classes.amber="{Binding NeedsAccessibility}" Classes.panel="{Binding !NeedsAccessibility}">
+              <StackPanel Spacing="8">
+                <TextBlock Text="{Binding MacHelpText}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding InputMonitoringText}" />
+                <WrapPanel>
+                  <Button Classes="outline" Content="Open Input Monitoring settings" Command="{Binding OpenInputMonitoringSettingsCommand}" Margin="0,0,8,8" />
+                  <Button Classes="outline" Content="Ask macOS for permission" Command="{Binding ShowMacPromptCommand}" Margin="0,0,8,8" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="panel" IsVisible="{Binding IsWindows}">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="secondary" Text="{Binding WindowsHelpText}" />
+                <Button Classes="outline" HorizontalAlignment="Left" Content="Restart as administrator"
+                        Command="{Binding RestartAsAdministratorCommand}" IsVisible="{Binding CanRestartAsAdministrator}" />
+              </StackPanel>
+            </Border>
+
+            <Button Classes="quiet" HorizontalAlignment="Left" Command="{Binding RestartInputCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="icon" Text="{x:Static vm:Icons.Refresh}" FontSize="16" />
+                <TextBlock Text="Restart input" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+
+          <Button Classes="quiet" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                  Command="{Binding UnlinkCommand}" IsVisible="{Binding ShowUnlinkButton}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Classes="icon" Text="{x:Static vm:Icons.Unlink}" FontSize="16" />
+              <TextBlock Text="Unlink this PC" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Border Classes="tint red" IsVisible="{Binding ShowUnlinkConfirm}">
+            <StackPanel Spacing="10">
+              <TextBlock TextWrapping="Wrap" Text="Unlink this PC? Linking again needs a new code or Discord sign-in." />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Classes="outline" Content="Unlink" Command="{Binding ConfirmUnlinkCommand}" />
+                <Button Classes="outline" Content="Keep linked" Command="{Binding CancelUnlinkCommand}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <TextBlock Classes="hint" Margin="10,0" Text="{Binding Version}" />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Footer: quiet actions. -->
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="14,0,14,10" IsVisible="{Binding ShowStatus}">
+      <Button Classes="quiet" HorizontalAlignment="Left" Command="{Binding ToggleServerFieldCommand}" IsVisible="{Binding ShowLinkScreen}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" Text="{x:Static vm:Icons.Server}" FontSize="16" />
+          <TextBlock Text="Change server" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+      <Button Classes="quiet" HorizontalAlignment="Left" Command="{Binding ToggleSettingsCommand}" IsVisible="{Binding ShowMainView}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" Text="{x:Static vm:Icons.Settings}" FontSize="16" />
+          <TextBlock Text="Settings" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+      <Button Grid.Column="1" Classes="quiet" Command="{Binding QuitCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="icon" Text="{x:Static vm:Icons.Power}" FontSize="16" />
+          <TextBlock Text="Quit" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+    </Grid>
+  </Grid>
+</Window>

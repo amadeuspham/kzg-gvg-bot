@@ -1,0 +1,8 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  # NuGet is intentionally not enabled yet: libdave must stay at 1.2.1.9 and NetCord at beta.30
+  # until the upgrade is tested live (docs/decisions.md).

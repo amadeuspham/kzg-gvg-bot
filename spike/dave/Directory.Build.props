@@ -1,0 +1,9 @@
+<Project>
+  <!-- Spike code is throwaway: do not inherit the repo's warnings-as-errors and style gate. -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

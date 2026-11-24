@@ -1,0 +1,12 @@
+# What the image build may see: the sources and the packaging scripts, nothing local.
+*
+!global.json
+!Directory.Build.props
+!src
+!packaging
+packaging/out
+packaging/.cache
+packaging/.tools
+packaging/docker/secrets.env
+**/bin
+**/obj

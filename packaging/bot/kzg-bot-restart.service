@@ -1,0 +1,7 @@
+# Optional: restarts the Kzg bot once. Started by kzg-bot-restart.timer; see docs/guides/host.md.
+[Unit]
+Description=Restart the Kzg guild-war relay bot
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl restart kzg-bot.service

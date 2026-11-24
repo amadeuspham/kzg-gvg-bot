@@ -1,0 +1,16 @@
+# Normalise text to LF in the repo; the gate and scripts run under bash on every OS.
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=lf
+
+*.ttf binary
+*.png binary
+*.ico binary
+*.icns binary
+*.zip binary
+*.gz binary
+*.wav binary
+*.opus binary
