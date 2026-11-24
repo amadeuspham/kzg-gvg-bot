@@ -69,7 +69,7 @@ jobs:
           # (the packaging owner adds the signing hook); check it before the first real release.
           KZG_SIGN_IDENTITY: ${{ secrets.KZG_MAC_SIGN_IDENTITY }}
         run: packaging/pack-app.sh --rid osx-arm64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: app-osx-arm64
           path: packaging/out/**
@@ -91,7 +91,7 @@ jobs:
         run: scripts/check.sh
       - name: Pack app
         run: packaging/pack-app.sh --rid win-x64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: app-win-x64
           path: packaging/out/**
@@ -110,7 +110,7 @@ jobs:
         run: |
           packaging/publish-bot.sh --rid linux-x64
           packaging/publish-bot.sh --rid win-x64
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: bot
           path: packaging/out/**
