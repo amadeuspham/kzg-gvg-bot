@@ -43,7 +43,7 @@ The repo has no remote yet. When it exists:
 2. CI (`.github/workflows/ci.yml`) runs the gate on macOS, Windows and Ubuntu 24.04 for every PR and push to `main`. It uses no secrets.
 3. Turn on branch protection requiring the three gate jobs.
 4. Auto-update works once a release exists: the release workflow packs the app with `KZG_UPDATE_FEED` set to the repo address, and the app reads the Velopack files from the repo's releases.
-5. The release workflow is manual and stays inert until the secret `KZG_MAC_CERT_P12` exists (also `KZG_MAC_CERT_PASSWORD`, `KZG_MAC_SIGN_IDENTITY`). Review `packaging/pack-app.sh`'s signing variable name against the workflow before the first release. When the Mac, Windows and bot jobs pass, a last job tags `v<version>` at the run's commit and creates the GitHub Release with the bot archives (linux-x64, win-x64, osx-arm64), every file in `velopack-<rid>/`, and `SHA256SUMS`. The version input must equal `<Version>` in `Directory.Build.props`.
+5. The release workflow is manual and does nothing until the secret `KZG_MAC_CERT_P12` exists (also `KZG_MAC_CERT_PASSWORD`, `KZG_MAC_SIGN_IDENTITY`). Review `packaging/pack-app.sh`'s signing variable name against the workflow before the first release. When the Mac, Windows and bot jobs pass, a last job tags `v<version>` at the run's commit and creates the GitHub Release with the bot archives (linux-x64, win-x64, osx-arm64), every file in `velopack-<rid>/`, and `SHA256SUMS`. The version input must equal `<Version>` in `Directory.Build.props`.
 
 ## Infrastructure (OCI)
 

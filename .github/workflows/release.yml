@@ -1,7 +1,7 @@
-name: Release (inert)
+name: Release
 
-# Inert on purpose: manual trigger only, and every job stops at the first step until the
-# signing secrets exist. Nothing here runs on push or tag. See docs/guides/dev-setup.md.
+# Manual trigger only, and every job stops at the first step until the signing secrets exist.
+# Nothing here runs on push or tag. See docs/guides/dev-setup.md.
 on:
   workflow_dispatch:
     inputs:
@@ -26,7 +26,7 @@ jobs:
         run: |
           if [ -z "$MAC_CERT_P12" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "Signing secrets are not configured; release is inert."
+            echo "Signing secrets are not configured; skipping release."
           else
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
