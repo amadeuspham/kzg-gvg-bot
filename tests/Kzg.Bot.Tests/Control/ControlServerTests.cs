@@ -48,7 +48,10 @@ public sealed class ControlServerTests : IAsyncDisposable
     public async Task A_used_expired_or_unknown_code_is_refused_with_its_reason()
     {
         var code = _bot.Codes.Issue(Alice, Host);
-        await (await _bot.ConnectAsync()).SendAsync(Hello(code: code));
+        var first = await _bot.ConnectAsync();
+        await first.SendAsync(Hello(code: code));
+        // The code is spent only once the server has answered; without this the second hello can win the race.
+        await first.ExpectAsync<WelcomeMessage>();
 
         await AssertRefusedAsync(Hello(code: code), ErrorCode.Used);
         await AssertRefusedAsync(Hello(code: ConnectCode.Generate(Host).Format()), ErrorCode.BadCode);

@@ -127,8 +127,7 @@ public sealed class FakeVoiceGatewayTests
     [Fact]
     public async Task Play_delivers_every_frame_in_order_at_the_pace_of_the_clock()
     {
-        var real = new SystemTimeSource();
-        var link = new FakeVoiceGateway(real).AddLink(A1);
+        var link = new FakeVoiceGateway(_time).AddLink(A1);
         List<OpusPacket> received = [];
         link.PacketReceived += p =>
         {
@@ -139,11 +138,40 @@ public sealed class FakeVoiceGatewayTests
         };
         byte[][] frames = [[1], [2], [3], [4], [5]];
 
-        await link.PlayAsync(Alice, frames);
+        var start = _time.Now;
+
+        var playing = link.PlayAsync(Alice, frames);
+        for (var i = 0; i < frames.Length; i++)
+        {
+            // A frame is due only when the clock says so: the clock stands still until the last one has landed.
+            await WaitForAsync(() => Count(received) == i + 1);
+            await Task.Delay(30);
+            Assert.Equal(i + 1, Count(received));
+            _time.Advance(TimeSpan.FromMilliseconds(20));
+        }
+        await playing;
 
         Assert.Equal(frames, received.Select(p => p.Data.ToArray()));
-        var span = received[^1].Arrival - received[0].Arrival;
-        Assert.InRange(span, TimeSpan.FromMilliseconds(70), TimeSpan.FromMilliseconds(400));
+        Assert.Equal(
+            Enumerable.Range(0, frames.Length).Select(i => start + TimeSpan.FromMilliseconds(20 * i)),
+            received.Select(p => p.Arrival));
+    }
+
+    private static int Count(List<OpusPacket> received)
+    {
+        lock (received)
+        {
+            return received.Count;
+        }
+    }
+
+    private static async Task WaitForAsync(Func<bool> condition)
+    {
+        using var giveUp = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        while (!condition())
+        {
+            await Task.Delay(1, giveUp.Token);
+        }
     }
 
     [Fact]
