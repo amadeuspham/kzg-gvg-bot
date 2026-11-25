@@ -128,7 +128,7 @@ jobs:
       contents: write   # create the tag and the release, attach assets
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
       - name: Collect files and write SHA256SUMS
