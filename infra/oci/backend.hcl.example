@@ -1,0 +1,4 @@
+# Copy to backend.hcl (git-ignored), then: terraform init -backend-config=backend.hcl
+bucket    = "kzg-tfstate"
+namespace = "examplenamespace"
+region    = "eu-frankfurt-1"
