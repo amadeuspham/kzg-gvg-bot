@@ -1,0 +1,199 @@
+name: Terraform (infra/oci)
+
+# The repo and its logs are public. Rules this file keeps:
+# - pull_request only, never pull_request_target: fork PRs get no secrets and no OCI access.
+# - OCI credentials live only in the oci-plan and oci-apply environments. oci-plan is a read-only
+#   identity; oci-apply can change resources, is limited to main and needs a reviewer's approval.
+# - Terraform output never reaches the log: infra/oci/ci.sh prints only addresses and actions,
+#   and no plan file or state is uploaded as an artifact.
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/terraform.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/terraform.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One run at a time against main, and an apply is never cancelled half way. PR plans change
+# nothing and take no lock, so they run in their own group.
+concurrency:
+  group: terraform-oci-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  TERRAFORM_VERSION: "1.17.2"
+  KZG_TF_REGION: eu-frankfurt-1
+
+jobs:
+  check:
+    name: fmt and validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: fmt
+        run: terraform fmt -check -recursive -diff infra
+      - name: validate
+        working-directory: infra/oci
+        run: |
+          terraform init -backend=false -lockfile=readonly -input=false -no-color
+          terraform validate -no-color
+
+  plan:
+    name: plan
+    needs: check
+    # Fork PRs get no secrets anyway; skip them (and Dependabot, which has its own secret store)
+    # instead of failing. Same-repo PRs run the PR's code with the read-only identity.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor != 'dependabot[bot]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: oci-plan
+    outputs:
+      changes: ${{ steps.plan.outputs.changes }}
+    env:
+      TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+      TF_VAR_compartment_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+      TF_VAR_instance_image_ocid: ${{ secrets.OCI_INSTANCE_IMAGE_OCID }}
+      TF_VAR_ssh_authorized_keys: ${{ secrets.OCI_SSH_AUTHORIZED_KEYS }}
+      KZG_TF_BUCKET: ${{ secrets.OCI_STATE_BUCKET }}
+      KZG_TF_NAMESPACE: ${{ secrets.OCI_STATE_NAMESPACE }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false # the wrapper copies stdout into logs and step outputs
+      - name: OCI credentials
+        env:
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+        run: |
+          for name in OCI_USER_OCID OCI_FINGERPRINT OCI_PRIVATE_KEY TF_VAR_tenancy_ocid TF_VAR_instance_image_ocid TF_VAR_ssh_authorized_keys KZG_TF_BUCKET KZG_TF_NAMESPACE; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret for $name is not set; see docs/guides/dev-setup.md, Infrastructure."
+              exit 1
+            fi
+          done
+          umask 077
+          mkdir -p "$HOME/.oci"
+          printf '%s\n' "$OCI_PRIVATE_KEY" > "$HOME/.oci/key.pem"
+          {
+            echo "[DEFAULT]"
+            echo "user=$OCI_USER_OCID"
+            echo "fingerprint=$OCI_FINGERPRINT"
+            echo "tenancy=$TF_VAR_tenancy_ocid"
+            echo "region=$KZG_TF_REGION"
+            echo "key_file=$HOME/.oci/key.pem"
+          } > "$HOME/.oci/config"
+      - name: init
+        run: infra/oci/ci.sh init
+      - name: plan
+        id: plan
+        run: |
+          rc=0
+          # No plan here takes the state lock, on PRs or on main: the read-only identity cannot
+          # write the lock object. The apply job plans again under the lock before it applies.
+          infra/oci/ci.sh plan "$RUNNER_TEMP/plan-summary.txt" --no-lock || rc=$?
+          case "$rc" in
+            0) echo "changes=false" >> "$GITHUB_OUTPUT" ;;
+            2) echo "changes=true" >> "$GITHUB_OUTPUT" ;;
+            *) exit "$rc" ;;
+          esac
+      - name: Keep the summary for the apply job
+        if: github.event_name != 'pull_request' && steps.plan.outputs.changes == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: plan-summary
+          path: ${{ runner.temp }}/plan-summary.txt
+          retention-days: 7
+      - name: Remove credentials
+        if: always()
+        run: rm -rf "$HOME/.oci" infra/oci/tfplan
+
+  apply:
+    name: apply
+    needs: plan
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event_name != 'pull_request' &&
+      needs.plan.outputs.changes == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Required reviewers and the main-only branch rule are set on this environment in GitHub.
+    environment: oci-apply
+    env:
+      TF_VAR_tenancy_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+      TF_VAR_compartment_ocid: ${{ secrets.OCI_TENANCY_OCID }}
+      TF_VAR_instance_image_ocid: ${{ secrets.OCI_INSTANCE_IMAGE_OCID }}
+      TF_VAR_ssh_authorized_keys: ${{ secrets.OCI_SSH_AUTHORIZED_KEYS }}
+      KZG_TF_BUCKET: ${{ secrets.OCI_STATE_BUCKET }}
+      KZG_TF_NAMESPACE: ${{ secrets.OCI_STATE_NAMESPACE }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: OCI credentials
+        env:
+          OCI_USER_OCID: ${{ secrets.OCI_USER_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+        run: |
+          for name in OCI_USER_OCID OCI_FINGERPRINT OCI_PRIVATE_KEY TF_VAR_tenancy_ocid TF_VAR_instance_image_ocid TF_VAR_ssh_authorized_keys KZG_TF_BUCKET KZG_TF_NAMESPACE; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret for $name is not set; see docs/guides/dev-setup.md, Infrastructure."
+              exit 1
+            fi
+          done
+          umask 077
+          mkdir -p "$HOME/.oci"
+          printf '%s\n' "$OCI_PRIVATE_KEY" > "$HOME/.oci/key.pem"
+          {
+            echo "[DEFAULT]"
+            echo "user=$OCI_USER_OCID"
+            echo "fingerprint=$OCI_FINGERPRINT"
+            echo "tenancy=$TF_VAR_tenancy_ocid"
+            echo "region=$KZG_TF_REGION"
+            echo "key_file=$HOME/.oci/key.pem"
+          } > "$HOME/.oci/config"
+      - uses: actions/download-artifact@v8
+        with:
+          name: plan-summary
+          path: ${{ runner.temp }}/approved
+      - name: init
+        run: infra/oci/ci.sh init
+      # The approval covered the plan job's summary. Plan again under the state lock and apply only
+      # if the changes are the same ones, so drift between approval and apply cannot slip through.
+      - name: plan again and compare
+        run: |
+          rc=0
+          infra/oci/ci.sh plan "$RUNNER_TEMP/plan-summary.txt" || rc=$?
+          if [ "$rc" -ne 2 ]; then
+            echo "::error::Expected changes (exit 2), got exit $rc. Nothing applied."
+            exit 1
+          fi
+          if ! diff -u "$RUNNER_TEMP/approved/plan-summary.txt" "$RUNNER_TEMP/plan-summary.txt"; then
+            echo "::error::The plan changed after approval. Nothing applied; rerun the workflow."
+            exit 1
+          fi
+      - name: apply
+        run: infra/oci/ci.sh apply
+      - name: Remove credentials
+        if: always()
+        run: rm -rf "$HOME/.oci" infra/oci/tfplan

@@ -47,3 +47,13 @@ Thumbs.db
 
 # A global ignore (*.core) hides the Kzg.Core project
 !src/Kzg.Core/
+
+# Terraform: state and variable files can hold secrets
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+# Account-specific backend settings and plan files (plans hold resource values)
+infra/**/backend.hcl
+*.tfplan
+tfplan

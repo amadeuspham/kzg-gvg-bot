@@ -31,6 +31,9 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 ## Hosting
 
 - The bot runs on Windows, Linux (Docker for glibc older than 2.38) or an Apple Silicon Mac. Intel Macs are not supported.
+- OCI infrastructure is changed only through `infra/oci` and the Terraform workflow, never the console. State moved from Resource Manager to an Object Storage bucket (native `oci` backend, conditional-write lock): Resource Manager holds one config per stack, so PR plans would overwrite what the next apply uses, and its job logs carry the full plan.
+- CI authenticates to OCI with API keys of two IAM users, a read-only one for plans and a write one for applies behind a reviewed, main-only GitHub environment. OCI federation with GitHub OIDC was left out: more setup than a single-maintainer repo needs.
+- Terraform output stays out of the public Actions logs and artifacts; only resource addresses and actions are shown, and an apply runs only if its fresh plan lists the same changes that were approved.
 
 ## Testing
 

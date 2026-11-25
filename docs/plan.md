@@ -287,7 +287,7 @@ Approved by the user so that people without a tech background can host and use i
 ## GitHub-ready repo and AI handover (added after step 13)
 
 (repo worker: .github/, AGENTS.md, CLAUDE.md, CONTRIBUTING.md, .claude/, docs/plan.md, docs/decisions.md, .gitignore)
-1. The repo can be pushed to a new GitHub repo at any time: complete .gitignore, no secrets or build output in the tree, a CI workflow running `scripts/check.sh` on macOS, Windows and Linux with least-privilege permissions, and a release workflow that stays inert until secrets and the repo exist.
+1. The repo can be pushed to a new GitHub repo at any time: complete .gitignore, no secrets or build output in the tree, a CI workflow running `scripts/check.sh` on macOS, Windows and Linux with least-privilege permissions, and a release workflow that does nothing until secrets and the repo exist.
 2. Another machine with Claude can pick up the work: AGENTS.md (with CLAUDE.md pointing to it) holds the working rules, the plan moves into docs/plan.md, the decisions made so far go in docs/decisions.md, and setup and live-test instructions say what each machine needs.
 
 ## Verification
