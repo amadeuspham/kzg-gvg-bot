@@ -54,4 +54,4 @@ In the app's Settings:
 - **Keys don't work in a game on Windows.** A game running as administrator can hide your key presses. The app says so and offers Restart as administrator.
 - **Keys don't work on a Mac.** In the app's Settings, under "Keys not working in game?", choose Open Input Monitoring settings and switch Discord Broadcast on.
 - **macOS says there is no Open Anyway button.** On macOS 14 or older, Control-click the file, choose Open, then Open again in the box.
-- **macOS says Discord Broadcast is damaged or can't be checked.** Ask the person who runs your server; they have a one-line fix in the [host guide](host.md).
+- **macOS says Discord Broadcast is damaged or can't be checked.** Ask the person who runs your server; they have a one-line fix in the [host guide](hosting.md).

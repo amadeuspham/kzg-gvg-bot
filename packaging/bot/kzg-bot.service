@@ -1,4 +1,4 @@
-# systemd unit for the Kzg bot, installed by docs/guides/host.md.
+# systemd unit for the Kzg bot, installed by docs/guide/hosting.md.
 # Edit User and the two paths to match where you unpacked the bot and where its data lives.
 [Unit]
 Description=Kzg team-voice relay bot

@@ -1,4 +1,4 @@
-# The Kzg bot with Caddy in front for automatic HTTPS, on a server with Docker. docs/guides/host.md has the steps:
+# The Kzg bot with Caddy in front for automatic HTTPS, on a server with Docker. docs/guide/hosting.md has the steps:
 #   1. Point your domain's DNS at this server and forward ports 80 and 443 from your router to it.
 #   2. Put the domain in kzg.env.
 #   3. In this folder: docker compose up -d

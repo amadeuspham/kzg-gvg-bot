@@ -249,7 +249,7 @@ Roles are roster agents. "check" means `scripts/check.sh` is green.
 | 0b | Keyword benchmark (dropped: the keyword was removed) | engineer | `spike/kws/` | none | CPU per stream; recall over 100 utterances; false triggers over 1 h of chatter |
 | 0c | Input spike (macOS here; the Windows build is checked by you in step 14) | engineer | `spike/input/` | none | Side buttons through SharpHook; SDL3 background controller input; macOS permission prompts. Ships a Windows test build with a checklist for the elevated-window case. |
 | 1 | Scaffold: git init, copied conventions, empty projects, README, git-ignored `.data/` with `secrets.example.json` (dev data dir) | task-worker | repo root, `scripts/`, `src/*/*.csproj`, `tests/*/*.csproj`, `.data/` | none | check passes; `git check-ignore .data/secrets.json` succeeds |
-| 2 | Contracts | specialist | `src/Kzg.Protocol/`, `src/Kzg.Core/Abstractions/`, `docs/contracts.md` | 1 | JSON round-trips; `hello` with zero or two credentials rejected; malformed, expired and used codes rejected |
+| 2 | Contracts | specialist | `src/Kzg.Protocol/`, `src/Kzg.Core/Abstractions/`, `docs/reference/contracts.md` | 1 | JSON round-trips; `hello` with zero or two credentials rejected; malformed, expired and used codes rejected |
 | 3 | Config store | engineer | `src/Kzg.Core/Config/` | 2 | validation rules, atomic write, check |
 | 4 | Routing | specialist | `src/Kzg.Core/Routing/` | 2 | every rule above tested, incl. moves, caller cleared, heartbeat timeout, stuck key, never routed back into own VC |
 | 5 | Jitter buffer + mixer | specialist | `src/Kzg.Core/Audio/` | 2 | reorder, loss and concealment, buffer growth and shrink, pre-roll, catch-up, passthrough, clipping (fake codec) |
@@ -261,7 +261,7 @@ Roles are roster agents. "check" means `scripts/check.sh` is green.
 | 11 | Bot host composition | engineer | `src/Kzg.Bot/Program.cs`, `Engine/`, `Logging/` | 4–10 | harness scenarios pass on the test server (routing matrix, pre-roll, latency, a relay moved mid-broadcast); log redaction test |
 | 12 | PC app | engineer | `src/Kzg.App/`, `src/Kzg.App.Input/` | 0c, 2 | link by code or Discord sign-in; keyboard/mouse via SharpHook in the app process and the controller via SDL3 in a helper child process (same exe, helper argument, events over stdout), never `SDL_Init` in the hook's process, because on macOS it stops the key hook (step 0c, `spike/input/README.md`); fallback if that fails: an input mode setting, "Keyboard & mouse" or "Controller", one at a time; bindings for the chosen mode; no synthetic input in tests unless the user is warned first and says go; open-mic toggle for callers; the status badge and warnings above; permission help; Windows run-as-admin option. Tests: binding matcher, state transitions Connected/Reconnecting/Disconnected/Broadcasting with `FakeTimeSource` |
 | 12b | Listen-only key input | engineer | `src/Kzg.App.Input/` | 12 | The OS never waits for the app, so a slow app can't lag the computer or lose the hook. macOS: a listen-only event tap (`kCGEventTapOptionListenOnly`) instead of libuiohook's active tap; the watchdog re-enables a tap that macOS disables. Windows: Raw Input with `RIDEV_INPUTSINK` for keyboard and mouse instead of the low-level hook, which Windows removes silently after its timeout. If Raw Input misses keys under an elevated game, keep the low-level hook, reinstall it every few seconds, and detect a dead hook on Windows too. Bindings, side buttons and the controller helper keep working; no synthetic input in tests unless the user is warned first and says go. Tests: the matcher fed from each source; watchdog recovery. |
-| 13 | Packaging + docs | engineer | `packaging/`, `docs/guides/`, `README.md` | 11, 12 | Velopack installers for win-x64, osx-arm64 and osx-x64; self-contained bot per OS with native libs. Host guide covers bot accounts, permissions (Connect/Speak/Move Members), the OAuth redirect, and nginx/Caddy snippets with WebSocket upgrade. Unsigned-install guide. |
+| 13 | Packaging + docs | engineer | `packaging/`, `docs/guide/`, `README.md` | 11, 12 | Velopack installers for win-x64, osx-arm64 and osx-x64; self-contained bot per OS with native libs. Host guide covers bot accounts, permissions (Connect/Speak/Move Members), the OAuth redirect, and nginx/Caddy snippets with WebSocket upgrade. Unsigned-install guide. |
 | 14 | End-to-end verification: automated parts here, human parts by you on the other machine | specialist, with you and community testers | none (read-only) | 13 | the Verification section below |
 
 **Parallel:** 0a, 0b, 0c and 1 run together. After step 2: 3, 4, 5, 6 and 12 run together (separate folders). Steps 7, 8, 9, 10, 11 and 13 follow their dependencies.
@@ -270,7 +270,7 @@ Roles are roster agents. "check" means `scripts/check.sh` is green.
 
 Approved by the user so that people without a tech background can host and use it.
 
-**Host and admin** (bot engineer: src/Kzg.Bot, src/Kzg.Discord, src/Kzg.Core/Config, packaging/, docs/guides/host.md, README.md)
+**Host and admin** (bot engineer: src/Kzg.Bot, src/Kzg.Discord, src/Kzg.Core/Config, packaging/, docs/guide/hosting.md, README.md)
 1. Setup page: on first start the bot serves a local setup page. Paste the bot tokens once; it shows an invite button per bot with the right permissions, checks each bot joined, then points to `/gvg setup`. No hand-edited secrets.json or config.json.
 2. `/gvg setup` in Discord: pick the Attack channels, the Defense channels and the two shot callers; relay bots are assigned to channels automatically.
 3. One-file hosting: a Docker compose bundle with the bot plus Caddy for automatic HTTPS. The host fills in the domain and runs one command.
@@ -278,7 +278,7 @@ Approved by the user so that people without a tech background can host and use i
 5. Discord sign-in is optional; `/connect` codes need no OAuth setup, and the guides say so.
 6. Mac hosting, Apple Silicon only (no Intel Macs): a self-contained osx-arm64 bot package; a launchd service that starts the bot at login and restarts it after a crash; the bot keeps the Mac awake while it runs (sleep would drop every relay bot); a Mac section in the host guide.
 
-**Players** (app engineer: src/Kzg.App*, tests/Kzg.App*, docs/guides/unsigned-install.md)
+**Players** (app engineer: src/Kzg.App*, tests/Kzg.App*, docs/guide/getting-started.md)
 1. "Open at login": a Settings switch, off by default.
 2. Automatic updates through Velopack, with the update feed configurable; it stays inactive until the GitHub repo exists.
 3. macOS Input Monitoring: the app checks it, shows a warning with a button that opens the exact System Settings page, and restarts itself once access is granted.

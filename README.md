@@ -6,8 +6,16 @@ A Discord relay for team voice events, built for Where Winds Meet. A bot in each
 
 Get Discord Broadcast from the [download page](https://amadeuspham.github.io/kzg-gvg-bot/). It picks the right file for your computer. The bot has no download; whoever hosts it deploys it.
 
-## Guides
+## Documentation
 
-- Players: [install and use Discord Broadcast](docs/guides/unsigned-install.md).
-- Hosts: [run the bot](docs/guides/host.md).
-- Developers: [CONTRIBUTING.md](CONTRIBUTING.md).
+The guides are on the [docs site](https://amadeuspham.github.io/kzg-gvg-bot/docs/), built from the files in `docs/`.
+
+| You are | Read |
+| --- | --- |
+| A player | [Install and use Discord Broadcast](docs/guide/getting-started.md) |
+| Running the bot | [Hosting the bot](docs/guide/hosting.md), then the [bot reference](docs/reference/bot.md) |
+| A developer | [CONTRIBUTING.md](CONTRIBUTING.md) and [Developer setup](docs/guide/development.md) |
+
+## License
+
+MIT. See [LICENSE](LICENSE).

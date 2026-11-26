@@ -2,7 +2,7 @@
 
 A Discord relay for team voice events. One relay bot sits in each small voice channel and copies a broadcasting player's audio into the other channels of their big team. A PC app (Avalonia, .NET 10) sends the "broadcast me" signal. C# / .NET 10, macOS, Windows and Linux.
 
-Read these first, in order: [docs/plan.md](docs/plan.md) (what and why), [docs/decisions.md](docs/decisions.md) (what changed since), [docs/contracts.md](docs/contracts.md) (wire and engine contracts), [docs/guides/dev-setup.md](docs/guides/dev-setup.md) (what each machine needs). Where the plan and decisions disagree, decisions win.
+Read these first, in order: [docs/plan.md](docs/plan.md) (what and why), [docs/decisions.md](docs/decisions.md) (what changed since), [docs/reference/contracts.md](docs/reference/contracts.md) (wire and engine contracts), [docs/guide/development.md](docs/guide/development.md) (what each machine needs). Where the plan and decisions disagree, decisions win.
 
 ## Hard rules
 
@@ -18,6 +18,7 @@ Read these first, in order: [docs/plan.md](docs/plan.md) (what and why), [docs/d
 
 - Gate (build with warnings as errors, `dotnet format --verify-no-changes`, tests with coverage): `scripts/check.sh`. CI runs the same file. Run it before reporting work done, and say so if you could not.
 - Format: `dotnet format Kzg.slnx`
+- Docs site (VitePress, from `docs/`): `npm ci && npx vitepress build docs`. It fails on dead links. Run it when you move or rename a doc or change links in one.
 - Offline bot with a made-up server and demo connect codes: `dotnet run --project src/Kzg.Bot -- --fake`
 - Live tests (real Discord test server): `KZG_LIVE=1 dotnet test tests/Kzg.Bot.Tests -c Release --filter "FullyQualifiedName~Live"`. Warn the user first: it joins real voice channels.
 - Real-clock tests (engine thread against the wall clock; skipped by the gate): `KZG_REALTIME=1 dotnet test tests/Kzg.Bot.Tests -c Release`
@@ -43,7 +44,7 @@ Read these first, in order: [docs/plan.md](docs/plan.md) (what and why), [docs/d
 - Comments explain why, never what. No emojis in code or docs. Do not create new documentation files unprompted; update the existing ones.
 - Stay in scope: no drive-by refactors, renames or dependency bumps. Validate at boundaries (Discord, WebSocket, files), not for impossible cases.
 - A design decision that is not obvious goes in [docs/decisions.md](docs/decisions.md) as one line.
-- Doc changes that must travel with code: user-visible control or setting changes go in the player guide ([docs/guides/unsigned-install.md](docs/guides/unsigned-install.md)), and in the host guide when they affect hosting; wire or engine changes go in `docs/contracts.md`.
+- Doc changes that must travel with code: user-visible control or setting changes go in the player guide ([docs/guide/getting-started.md](docs/guide/getting-started.md)), and in the host guide when they affect hosting; wire or engine changes go in `docs/reference/contracts.md`.
 
 ## Commits
 
@@ -59,4 +60,4 @@ Pass messages by HEREDOC so formatting survives.
 
 ## Working on another machine
 
-Follow [docs/guides/dev-setup.md](docs/guides/dev-setup.md). Secrets never travel through git or chat: the user copies `.data/secrets.json` between machines themselves. If a task needs a Discord test server, a Windows PC or a phone and you do not have it, say what is missing and stop; do not fake a pass.
+Follow [docs/guide/development.md](docs/guide/development.md). Secrets never travel through git or chat: the user copies `.data/secrets.json` between machines themselves. If a task needs a Discord test server, a Windows PC or a phone and you do not have it, say what is missing and stop; do not fake a pass.

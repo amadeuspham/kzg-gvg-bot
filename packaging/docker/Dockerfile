@@ -3,7 +3,7 @@
 #
 # Build from the repository root:
 #   docker build -f packaging/docker/Dockerfile -t kzg-bot .
-# Run it (docs/guides/host.md has the full command and a compose file). --memory is the safety net: the bot
+# Run it (docs/guide/hosting.md has the full command and a compose file). --memory is the safety net: the bot
 # holds about 150 MB in a full war, and a container that passes 512 MB is killed and, by --restart, started again.
 #   docker run -d --name kzg-bot --restart unless-stopped --memory 512m --memory-swap 512m \
 #       --log-opt max-size=10m --log-opt max-file=3 -p 127.0.0.1:7878:7878 -v kzg-data:/data kzg-bot
