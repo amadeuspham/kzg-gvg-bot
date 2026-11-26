@@ -1,6 +1,6 @@
 # Hosting the bot
 
-This guide gets the Kzg bot running on your own computer or server. Pick ONE way to run it, follow only that part, then do the two shared parts, "Set it up in Discord" and "Let players join". For players installing KZG Broadcast, see the [unsigned-install guide](unsigned-install.md). Technical background is in [contracts.md](../contracts.md).
+This guide gets the Kzg bot running on your own computer or server. Pick ONE way to run it, follow only that part, then do the two shared parts, "Set it up in Discord" and "Let players join". For players installing Discord Broadcast, see the [unsigned-install guide](unsigned-install.md). Technical background is in [contracts.md](../contracts.md).
 
 ## Before you start
 
@@ -26,7 +26,7 @@ Releases carry no bot archive. Parts B, C and D build the bot from source: clone
 You need Docker with Compose, and the project folder on the server.
 
 1. Point your domain's DNS at your home address. Forward ports 80 and 443 from your router to the server.
-2. Open `packaging/docker/kzg.env` and replace `gvg.example.com` with your domain.
+2. Open `packaging/docker/kzg.env` and replace `bot.example.org` with your domain.
 3. In `packaging/docker/`, run:
 
    ```bash
@@ -45,16 +45,16 @@ Apple Silicon only (M1 or newer).
 2. Double-click `install-mac.command`. If macOS won't open it, Control-click it, choose Open, then Open again.
 3. Your browser opens the setup page by itself. If it doesn't, find the link in `~/Library/Logs/Kzg/bot.log` (open it with Console).
 4. Point your domain's DNS at your home address. Forward ports 80 and 443 from your router to this Mac.
-5. In Terminal, install Caddy and give it your domain (replace `gvg.yourguild.com`):
+5. In Terminal, install Caddy and give it your domain (replace `bot.example.org`):
 
    ```bash
    brew install caddy
-   printf 'gvg.yourguild.com {\n    reverse_proxy 127.0.0.1:7878\n}\n' > "$(brew --prefix)/etc/Caddyfile"
+   printf 'bot.example.org {\n    reverse_proxy 127.0.0.1:7878\n}\n' > "$(brew --prefix)/etc/Caddyfile"
    brew services start caddy
    ```
 
    `brew services` keeps Caddy running after a reboot.
-6. Check it: `curl https://gvg.yourguild.com/healthz` prints `ok`.
+6. Check it: `curl https://bot.example.org/healthz` prints `ok`.
 7. Continue with "Set it up in Discord" below.
 
 The bot now starts at login, restarts after a crash, and keeps the Mac awake. Leave the Mac logged in.
@@ -76,7 +76,7 @@ The bot now starts at login, restarts after a crash, and keeps the Mac awake. Le
 6. In `C:\caddy`, create a file named `Caddyfile` (no extension) with your domain:
 
    ```
-   gvg.yourguild.com {
+   bot.example.org {
        reverse_proxy 127.0.0.1:7878
    }
    ```
@@ -89,7 +89,7 @@ The bot now starts at login, restarts after a crash, and keeps the Mac awake. Le
    sc.exe start caddy
    ```
 
-8. Check it: `curl.exe https://gvg.yourguild.com/healthz` prints `ok`.
+8. Check it: `curl.exe https://bot.example.org/healthz` prints `ok`.
 9. Continue with "Set it up in Discord" below.
 
 The bot now starts with the PC and restarts after a crash.
@@ -114,24 +114,24 @@ The bot now starts with the PC and restarts after a crash.
    ```
 
    The package starts Caddy now and at every boot. Other distributions: see <https://caddyserver.com/docs/install>.
-5. Give Caddy your domain (replace `gvg.yourguild.com`) and reload it:
+5. Give Caddy your domain (replace `bot.example.org`) and reload it:
 
    ```bash
-   printf 'gvg.yourguild.com {\n    reverse_proxy 127.0.0.1:7878\n}\n' | sudo tee /etc/caddy/Caddyfile
+   printf 'bot.example.org {\n    reverse_proxy 127.0.0.1:7878\n}\n' | sudo tee /etc/caddy/Caddyfile
    sudo systemctl reload caddy
    ```
 
-6. Check it: `curl https://gvg.yourguild.com/healthz` prints `ok`.
+6. Check it: `curl https://bot.example.org/healthz` prints `ok`.
 7. Continue with "Set it up in Discord" below.
 
 ## Set it up in Discord
 
 1. **On the setup page**, follow its three steps:
-   1. In the [Discord Developer Portal](https://discord.com/developers/applications), make one bot per team voice channel as the page describes, naming each application `KZG Broadcaster`, and paste each token. The fields are named for the channels the bots fill: A1 Broadcaster to A3 Broadcaster for the first to third Attack channels, D1 Broadcaster to D3 Broadcaster for Defense. With fewer bots, leave the fields of channels you don't use empty.
-   2. Enter your domain under "Public address" (for example `gvg.yourguild.com`). Docker fills it in for you.
+   1. In the [Discord Developer Portal](https://discord.com/developers/applications), make one bot per team voice channel as the page describes, naming each application `Broadcast Relay`, and paste each token. The fields are named for the channels the bots fill: A1 Broadcaster to A3 Broadcaster for the first to third Attack channels, D1 Broadcaster to D3 Broadcaster for Defense. With fewer bots, leave the fields of channels you don't use empty.
+   2. Enter your domain under "Public address" (for example `bot.example.org`). Docker fills it in for you.
    3. Use each bot's Invite button (Invite A1 Broadcaster, and so on) to add it to your server, then choose Finish setup.
 2. **In Discord**, run `/gvg setup`. Pick the Attack and Defense voice channels. A relay bot joins each channel: A1 Broadcaster the channel you pick as `attack-1`, D1 Broadcaster the one you pick as `defense-1`, and so on. A channel whose bot you left out takes a bot whose channel you didn't pick. Each bot sets its server nickname to its channel's name. Optionally set `channel` to a text channel where the bot reports problems.
-3. **Turn on Sign in with Discord**, so players can sign in from KZG Broadcast:
+3. **Turn on Sign in with Discord**, so players can sign in from Discord Broadcast:
    1. In the Developer Portal, open the first bot's application. Under OAuth2, choose Add Redirect and enter exactly `https://<your domain>/auth/callback`, using the same address as the public address. A redirect that differs in any character makes Discord refuse the sign-in.
    2. Still in OAuth2, choose Reset Secret and copy the Client Secret. Stop the bot and add it to `secrets.json` in the bot's data folder as `"oauthClientSecret": "..."`. Start the bot again. With Docker, instead keep it in `packaging/docker/secrets.env`, which git ignores: in `packaging/docker/`, run `touch secrets.env && chmod 600 secrets.env` so only you can read it, add the line `KZG_SECRET_oauthClientSecret=...` to it in a text editor, and run `docker compose up -d`. Never put it in `kzg.env`: that file is part of the project and anyone can read it. (Data folders: Docker `/data` in the `kzg-data` volume, Mac `~/Library/Application Support/Kzg`, Windows `C:\ProgramData\Kzg`, Linux `/var/lib/kzg`.)
    3. In Discord, run `/gvg config set oauth.clientId <the Client ID>`, then `/gvg config set oauth.enabled true`.
@@ -140,13 +140,13 @@ The setup link works once, in one browser, and only from the computer the bot ru
 
 ## Let players join
 
-Each player installs KZG Broadcast (see the [unsigned-install guide](unsigned-install.md)) and chooses Sign in with Discord. If that fails, they type `/connect` in Discord and paste the code into KZG Broadcast (it works once, for 10 minutes). Players cannot connect until the public address is set.
+Each player installs Discord Broadcast (see the [unsigned-install guide](unsigned-install.md)) and chooses Sign in with Discord. The sign-in screen has a "Bot address" field: it comes filled in with the address the app was built with, and a player whose bot lives elsewhere types the public address from above there. If that fails, they type `/connect` in Discord and paste the code into Discord Broadcast (it works once, for 10 minutes). Players cannot connect until the public address is set.
 
 ## If something goes wrong
 
 - **Setup link lost or already used.** Restart the bot; it prints a new one. (Docker: `docker compose restart bot`. Mac: run `install-mac.command` again. Windows: restart the `Kzg bot` task. Linux: `sudo systemctl restart kzg-bot`.)
 - **A token is rejected.** The setup page names the bot with the wrong token. Paste a fresh one (Reset Token in the Developer Portal).
-- **Players can't connect.** Check the public address: `/gvg config set publicHost gvg.yourguild.com`. Then check `curl https://gvg.yourguild.com/healthz` prints `ok`.
+- **Players can't connect.** Check the public address: `/gvg config set publicHost bot.example.org`. Then check `curl https://bot.example.org/healthz` prints `ok`.
 - **A relay bot is missing from voice.** `/gvg status` shows the bots. It rejoins by itself within seconds; if it does not, restart the bot.
 - **A bot shows its account name instead of "A1 Broadcaster".** `/gvg status` says when a bot can't set its nickname. It relays all the same; give its role the Change Nickname permission in Server Settings, and it renames itself after the next `/gvg` change or when the bot restarts.
 - **Linux says `GLIBC_2.38` or `GLIBCXX_3.4.32` not found.** Your system is too old (Debian 12, Ubuntu 22.04). Use A. Docker.
@@ -171,9 +171,9 @@ map $http_upgrade $connection_upgrade {
 
 server {
     listen 443 ssl;
-    server_name kzg.example.com;
-    ssl_certificate     /etc/letsencrypt/live/kzg.example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/kzg.example.com/privkey.pem;
+    server_name bot.example.org;
+    ssl_certificate     /etc/letsencrypt/live/bot.example.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bot.example.org/privkey.pem;
 
     location / {
         proxy_pass http://127.0.0.1:7878;
@@ -188,7 +188,7 @@ server {
 }
 ```
 
-Check it: `curl https://kzg.example.com/healthz` prints `ok`.
+Check it: `curl https://bot.example.org/healthz` prints `ok`.
 
 ### Docker details
 
@@ -202,7 +202,7 @@ Check it: `curl https://kzg.example.com/healthz` prints `ok`.
   sudo mkdir -p /srv/kzg && sudo chown 1654:1654 /srv/kzg
   docker run -d --name kzg-bot --restart unless-stopped --memory 512m --memory-swap 512m \
       --log-opt max-size=10m --log-opt max-file=3 \
-      -e KZG_PUBLIC_HOST=gvg.yourguild.com -p 127.0.0.1:7878:7878 -v /srv/kzg:/data kzg-bot
+      -e KZG_PUBLIC_HOST=bot.example.org -p 127.0.0.1:7878:7878 -v /srv/kzg:/data kzg-bot
   docker logs kzg-bot
   ```
 
@@ -214,7 +214,7 @@ Check it: `curl https://kzg.example.com/healthz` prints `ok`.
 - `/gvg alerts channel:#admins` sets the alerts channel; `/gvg alerts` with no channel stops alerts. The bot posts a test message or names the missing permission.
 - `/gvg status` shows bots and channels. There are no shot callers: every player has open mic and both keys, and a `shotCallerUserId` left in an older `config.json` is ignored. `/gvg bind`, `/gvg unbind`, `/gvg bot assign` change one thing. `/gvg stop` takes every bot out of voice until `/gvg start`. The stop is saved in `config.json`, so it survives a restart of the bot or the server.
 - A bot is named after the team channel it is in now: the second Attack channel's bot is "A2 Broadcaster", in every reply, status line, alert and log, and as its server nickname. The name follows the bot when `/gvg bot assign` moves it or `/gvg unbind` shifts the channels after one. A bot with no team channel goes by its `secrets.json` name, such as "relay5 (spare)", which is also how `/gvg bot assign` lists it.
-- `/gvg config set publicHost gvg.yourguild.com` sets the players' address.
+- `/gvg config set publicHost bot.example.org` sets the players' address.
 - `/jungle` is open to every member, not only admins. `start` runs the match clock from 35:00; `sync time:MM:SS` sets it to the in-game time (from 35:00 down to 00:00); `pause`, `resume` and `stop` do what they say; `status` shows the clock and the next call; `test` plays a call now. Calls are spoken 40 and 20 seconds before the jungle spawns at 25:00, 20:00 (with halftime), 15:00, 10:00 and 05:00, in every team channel that has a relay bot in it. Replies are private to whoever ran the command. Admins set the loudness with `/gvg config set jungleVolume`; a call already playing finishes at the old level. The clock is kept in memory only, so a bot restart loses it and players run `/jungle sync` again.
 - Alerts: with a channel set, the bot posts when relay bots have been out for 30 seconds, when they are back, and when it restarts after an unexpected stop. `/gvg bot assign` is the only way to change a bot's channel.
 
@@ -234,7 +234,7 @@ You can edit the files while the bot is stopped (`config.example.json` and `secr
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `publicHost` | none | Name apps connect to, such as `kzg.example.com`, optionally `:port`. Goes into every connect code. |
+| `publicHost` | none | Name apps connect to, such as `bot.example.org`, optionally `:port`. Goes into every connect code. |
 | `listen` | `127.0.0.1:7878` | Plain HTTP, behind the proxy. Keep on loopback. |
 | `guildId` | none | Your server's ID. Empty: the primary bot's one server; with several the bot refuses to start until set. |
 | `adminRoleId` | none | A role that may use `/gvg` besides Manage Server. |
@@ -248,7 +248,7 @@ You can edit the files while the bot is stopped (`config.example.json` and `secr
 
 The bot is held to 512 MB with no swap and is restarted if it passes that: systemd `MemoryMax=512M` and `MemorySwapMax=0`, Docker `--memory 512m --memory-swap 512m` with `--restart unless-stopped`. A kill leaves bots listed in voice briefly; apps reconnect on their own. If the cap was hit (`journalctl -u kzg-bot` shows `oom-kill`; `docker inspect kzg-bot --format '{{.State.OOMKilled}}'` prints `true`), raise it and tell whoever maintains the bot.
 
-A daily restart is optional and off by default. It ends a war call in progress, so pick a quiet hour.
+A daily restart is optional and off by default. It ends a team call in progress, so pick a quiet hour.
 
 - systemd: `sudo cp /opt/kzg-bot/kzg-bot-restart.service /opt/kzg-bot/kzg-bot-restart.timer /etc/systemd/system/`, edit `OnCalendar` (05:00 by default), then `sudo systemctl daemon-reload && sudo systemctl enable --now kzg-bot-restart.timer`.
 - Docker: cron `0 5 * * * docker restart kzg-bot`.

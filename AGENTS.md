@@ -1,13 +1,13 @@
 # Agent instructions: kzg-gvg-bot
 
-A Discord relay for Where Winds Meet guild wars. One relay bot sits in each small voice channel and copies a broadcasting player's audio into the other channels of their big team. A PC app (Avalonia, .NET 10) sends the "broadcast me" signal. C# / .NET 10, macOS, Windows and Linux.
+A Discord relay for team voice events. One relay bot sits in each small voice channel and copies a broadcasting player's audio into the other channels of their big team. A PC app (Avalonia, .NET 10) sends the "broadcast me" signal. C# / .NET 10, macOS, Windows and Linux.
 
 Read these first, in order: [docs/plan.md](docs/plan.md) (what and why), [docs/decisions.md](docs/decisions.md) (what changed since), [docs/contracts.md](docs/contracts.md) (wire and engine contracts), [docs/guides/dev-setup.md](docs/guides/dev-setup.md) (what each machine needs). Where the plan and decisions disagree, decisions win.
 
 ## Hard rules
 
 1. **Never print, log, commit or paste a secret.** That covers bot tokens, the OAuth client secret, device tokens, connect codes, signing certificates and their passwords. Refer to them by name (`relay1`, `oauthClientSecret`). Do not read `.data/secrets.json` or `.data/devices.json` into the conversation; if a task needs a value, let the code read it. Test fixtures use made-up values only.
-2. **Never touch the user's running processes.** Do not kill, restart, signal or attach to a bot, app, TeamSpeak or game process you did not start in this session. Do not change their data folders.
+2. **Never touch the user's running processes.** Do not kill, restart, signal or attach to a bot, app, voice-chat or game process you did not start in this session. Do not change their data folders.
 3. **Synthetic input only after a warning.** Anything that presses keys, moves the mouse or plays audio on the user's machine (CGEvent posting, SendInput, `say`, audio playback) runs only after you warn the user in chat and they say go. The app itself only listens; it never injects input.
 4. **Commit and push only when asked.** Work stays uncommitted until the user says "commit". Never push, open a PR, merge, tag or release without an explicit go-ahead. Never use `--no-verify`.
 5. **Live tests leave nothing behind.** They need `KZG_LIVE=1` and the test bots in `.data/secrets.json`. Afterwards every bot is out of voice; check with the live test's own cleanup output, and if a run was killed, say so and list the bots that may still be connected.

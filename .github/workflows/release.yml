@@ -133,10 +133,10 @@ jobs:
 
           | Platform | File |
           | --- | --- |
-          | Windows | [`KZGBroadcast-win-x64-Setup.exe`](BASE/KZGBroadcast-win-x64-Setup.exe) |
-          | macOS (Apple Silicon) | [`KZGBroadcast-macOS-arm64-Setup.pkg`](BASE/KZGBroadcast-macOS-arm64-Setup.pkg) |
-          | Portable (Windows) | [`KZGBroadcast-win-x64-Portable.zip`](BASE/KZGBroadcast-win-x64-Portable.zip) |
-          | Portable (macOS) | [`KZGBroadcast-macOS-arm64-Portable.zip`](BASE/KZGBroadcast-macOS-arm64-Portable.zip) |
+          | Windows | [`DiscordBroadcast-win-x64-Setup.exe`](BASE/DiscordBroadcast-win-x64-Setup.exe) |
+          | macOS (Apple Silicon) | [`DiscordBroadcast-macOS-arm64-Setup.pkg`](BASE/DiscordBroadcast-macOS-arm64-Setup.pkg) |
+          | Portable (Windows) | [`DiscordBroadcast-win-x64-Portable.zip`](BASE/DiscordBroadcast-win-x64-Portable.zip) |
+          | Portable (macOS) | [`DiscordBroadcast-macOS-arm64-Portable.zip`](BASE/DiscordBroadcast-macOS-arm64-Portable.zip) |
 
           The installers are unsigned, so Windows and macOS warn first; see the unsigned-install guide in the repository (`docs/guides/unsigned-install.md`).
 
