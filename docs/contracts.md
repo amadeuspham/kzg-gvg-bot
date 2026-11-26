@@ -101,6 +101,21 @@ The host is an ASCII DNS name (IDNs in punycode), an IPv4 address or a bracketed
 
 `ConnectCode.TryParse` accepts only the exact form `Format` writes, at most 512 characters. The app trims whitespace around a pasted code before parsing it; the codec doesn't. `ConnectCode.Generate(host)` makes a code with a fresh random secret.
 
+## Rate limits (`Kzg.Bot.Http`)
+
+The host is in every connect code, so the public routes are limited before any of their logic runs. `HttpLimits` holds the numbers (`BotSetup.Limits`); `RateLimits` applies them with ASP.NET's rate limiter. A route is told by its endpoint, not its path, so `/WS` and `/ws/` count as `/ws`.
+
+| Route | Per client | In all |
+| --- | --- | --- |
+| `/ws` | 30 new connections, then one more every 2 s; 32 open at once | 1024 open at once |
+| `/auth/start` | 10, then one more every 6 s | none |
+| `/auth/callback` | 10, then one more every 6 s, apart from `/auth/start` | none |
+| `/healthz` | none | none |
+
+- **Open sockets.** The `/ws` count is held for the socket's whole life, so it bounds connections waiting on a Discord sign-in (up to 10 minutes) as well as signed-in ones. Kestrel also keeps at most 2048 TCP connections that aren't WebSockets; one past that is closed before a request is read.
+- **Refused.** Over any limit the reply is `429` with `Retry-After` (seconds, when the bucket knows), the headers every reply carries and a plain-text line, before the WebSocket upgrade. The app treats it as a failed connect and backs off as usual. The log says at most once a minute how many were refused and the latest route, never the address.
+- **Who the client is.** An IPv4 address, or the /64 of an IPv6 one. It is Kestrel's peer, unless the peer is in `trustedProxies` (config, read at startup: IPs or CIDR networks): then it is the last `X-Forwarded-For` hop, the one that proxy added, and earlier hops are ignored. Only `X-Forwarded-For` is read; scheme and host are not taken from headers. The default lists loopback, the private IPv4 ranges and `fc00::/7`, where a proxy on the same computer, LAN or Docker network comes from; never a public address. `[]` ignores the header from everyone. A request that carries the header from a peer not listed is limited as that peer, and the log says so once, because every app behind that proxy then shares one client's limits.
+
 ## Engine contracts (`Kzg.Core.Abstractions`)
 
 `Kzg.Core` references `Kzg.Protocol`, never the reverse, so the wire has its own enums and `WireMapping` converts between them.

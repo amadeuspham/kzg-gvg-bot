@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Text;
 using Kzg.Audio;
 using Kzg.Bot.Fake;
+using Kzg.Bot.Http;
 using Kzg.Core.Abstractions;
 using Kzg.Core.Config;
 using Kzg.Core.Pairing;
@@ -19,7 +20,7 @@ internal sealed class HostRig : IAsyncDisposable
     private readonly string _folder;
     private readonly bool _ownsFolder;
 
-    public HostRig(Func<BotConfig, BotConfig>? config = null, string? folder = null, SignInIdentity? identity = null)
+    public HostRig(Func<BotConfig, BotConfig>? config = null, string? folder = null, SignInIdentity? identity = null, HttpLimits? limits = null)
     {
         (_folder, _ownsFolder) = (folder ?? Path.Combine(Path.GetTempPath(), "kzg-host-tests", Guid.NewGuid().ToString("N")), folder is null);
         World = DemoWorld.Create(Time, "gvg.example.com");
@@ -42,6 +43,7 @@ internal sealed class HostRig : IAsyncDisposable
             Log = Log,
             LogLevel = LogLevel.Trace,
             QuietFramework = false,
+            Limits = limits ?? new HttpLimits(),
         });
     }
 

@@ -159,7 +159,7 @@ Each player installs Discord Broadcast (see the [unsigned-install guide](unsigne
 
 ### Put it behind HTTPS
 
-Parts A to D set this up for you. Any reverse proxy with a certificate a browser accepts works, in front of `127.0.0.1:7878`. It must pass four paths to the bot (`/ws`, `/auth/start`, `/auth/callback`, `/healthz`), allow WebSocket upgrades, and keep connections open for hours.
+Parts A to D set this up for you. Any reverse proxy with a certificate a browser accepts works, in front of `127.0.0.1:7878`. It must pass four paths to the bot (`/ws`, `/auth/start`, `/auth/callback`, `/healthz`), allow WebSocket upgrades, keep connections open for hours, and set `X-Forwarded-For` to the player's address (Caddy does by itself), or every player shares one rate limit.
 
 nginx (certificate from certbot or your own):
 
@@ -181,6 +181,7 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
         proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
         proxy_read_timeout 1h;
         proxy_send_timeout 1h;
         proxy_buffering off;
@@ -236,6 +237,7 @@ You can edit the files while the bot is stopped (`config.example.json` and `secr
 | --- | --- | --- |
 | `publicHost` | none | Name apps connect to, such as `bot.example.org`, optionally `:port`. Goes into every connect code. |
 | `listen` | `127.0.0.1:7878` | Plain HTTP, behind the proxy. Keep on loopback. |
+| `trustedProxies` | loopback and private ranges | Proxies whose `X-Forwarded-For` names the player, as IPs or CIDR networks such as `10.0.0.0/8`. Each player is rate limited by their own address only through these; `[]` ignores the header. If the log says a proxy isn't in `trustedProxies`, add its address. |
 | `guildId` | none | Your server's ID. Empty: the primary bot's one server; with several the bot refuses to start until set. |
 | `adminRoleId` | none | A role that may use `/gvg` besides Manage Server. |
 | `oauth.enabled`, `oauth.clientId` | off | Discord sign-in. |

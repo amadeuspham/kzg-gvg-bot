@@ -32,6 +32,7 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 
 - The bot runs on Windows, Linux (Docker for glibc older than 2.38) or an Apple Silicon Mac. Intel Macs are not supported.
 - `/gvg stop` is saved in `config.json`, so it survives restarts.
+- The public routes are rate limited per client address (IPv6 by /64) with ASP.NET's limiter, and `X-Forwarded-For` is believed only from `trustedProxies`, which defaults to loopback and private ranges so Caddy on the Docker network works unconfigured; spoofing from those only picks a limiter bucket, and the totals still hold.
 - Releases carry no bot archive: the bot runs only on our server, which builds it from source with Docker. Other hosts build with `packaging/publish-bot.sh`.
 - OCI infrastructure is changed only through `infra/oci` and the Terraform workflow, never the console. State moved from Resource Manager to an Object Storage bucket (native `oci` backend, conditional-write lock): Resource Manager holds one config per stack, so PR plans would overwrite what the next apply uses, and its job logs carry the full plan.
 - CI authenticates to OCI with API keys of two IAM users, a read-only one for plans and a write one for applies behind a reviewed, main-only GitHub environment. OCI federation with GitHub OIDC was left out: more setup than a single-maintainer repo needs.

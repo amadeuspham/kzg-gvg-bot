@@ -1,6 +1,7 @@
 using System.Net;
 using Kzg.Bot.Control;
 using Kzg.Bot.Engine;
+using Kzg.Bot.Http;
 using Kzg.Core.Abstractions;
 using Kzg.Core.Config;
 using Kzg.Core.Pairing;
@@ -47,6 +48,8 @@ public sealed record BotSetup
     public EngineOptions Engine { get; init; } = new();
 
     public ControlOptions Control { get; init; } = new();
+
+    public HttpLimits Limits { get; init; } = new();
 }
 
 /// <summary>The bot couldn't start for a reason an admin can fix; the message is safe to print.</summary>
