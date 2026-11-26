@@ -76,6 +76,9 @@ h1{font-size:clamp(27px,5.4vw,34px);line-height:1.15;margin:0 0 16px;font-weight
 
 section{padding:42px 0 10px}
 .label{margin:0 0 6px}
+.tag{font-family:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.tag::before{content:"["}
+.tag::after{content:"]"}
 h2{font-size:26px;font-weight:650;margin:0 0 6px}
 .sub{color:var(--muted);margin:0 0 22px;font-size:16px;font-family:inherit}
 
@@ -88,12 +91,13 @@ h2{font-size:26px;font-weight:650;margin:0 0 6px}
 .steps b{display:block;margin-bottom:8px;font-weight:650;font-size:17px}
 .steps span,.key p{color:var(--muted);font-size:15px;margin:0}
 .key .kd{display:flex;align-items:center;height:64px;padding:0 24px}
-kbd{font-size:14px;text-transform:uppercase;letter-spacing:.02em;color:var(--text)}
+kbd{font-size:20px;text-transform:uppercase;letter-spacing:.02em;color:var(--text)}
 kbd::before{content:"["}kbd::after{content:"]"}
 .key strong{color:var(--text);font-weight:650}
 .steps code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px}
 
 .notice{--n:64px;background:var(--card2)}
+.notice .tag{font-size:20px;color:var(--text)}
 .notice .nz{height:64px;display:flex;align-items:center;padding:0 36px}
 .notice h2{font-size:21px;margin:0 0 12px}
 .notice p{margin:0 0 12px;color:var(--muted)}
@@ -129,6 +133,7 @@ footer p{margin:4px 0}
 @media (max-width:760px){
   .steps,.keys{grid-template-columns:1fr}
   .tk .body{padding:28px 22px 32px}
+  .notice .nz{padding:0 22px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
@@ -208,15 +213,15 @@ footer p{margin:4px 0}
   <h2>Three ways to talk</h2>
   <p class="sub">You choose the key for each one in the app. Pick whatever suits your game.</p>
   <div class="keys">
-    <div class="key tk"><div class="kd"><kbd>Team key</kbd></div><div class="in"><p><strong>Your team.</strong> Hold it to talk to your whole big team.</p></div></div>
+    <div class="key tk"><div class="kd"><kbd>Team key</kbd></div><div class="in"><p><strong>Your team.</strong> Hold it to talk to your whole big team, either Attack or Defense (whichever you are on), not both.</p></div></div>
     <div class="key tk"><div class="kd"><kbd>All-teams key</kbd></div><div class="in"><p><strong>All teams.</strong> Hold it to talk to Attack and Defense together.</p></div></div>
-    <div class="key tk"><div class="kd"><kbd>Open-mic key</kbd></div><div class="in"><p><strong>Open mic.</strong> Press once and your team keeps hearing you until you press it again.</p></div></div>
+    <div class="key tk"><div class="kd"><kbd>Open-mic key</kbd></div><div class="in"><p><strong>Open mic.</strong> Press once and your big team (Attack or Defense) keeps hearing you until you press it again.</p></div></div>
   </div>
   <p class="sub" style="margin-top:14px">Phone players do not need the app. They hear broadcasts and talk in their own team channel as usual.</p>
 </section>
 
 <section>
-  <div class="tag label">FAQ</div>
+  <div class="tag label">FAQs</div>
   <h2>Questions</h2>
   <details>
     <summary>What does the app see or do?</summary>
@@ -224,6 +229,72 @@ footer p{margin:4px 0}
     <ul>
       <li><b>Windows:</b> no special permission is needed.</li>
       <li><b>Mac:</b> it asks for Input Monitoring only, not Accessibility.</li>
+    </ul>
+  </details>
+  <details>
+    <summary>My keys do nothing in the game</summary>
+    <ul>
+      <li><b>Windows:</b> a game running as administrator can hide key presses. The app says so and offers Restart as administrator.</li>
+      <li><b>Mac:</b> in the app's Settings, open Input Monitoring settings and switch Discord Broadcast on.</li>
+    </ul>
+  </details>
+  <details>
+    <summary>How do I unlink my PC?</summary>
+    <p>In the app's Settings, choose Unlink this PC. The server forgets that PC's sign-in at once. An admin can also do it for you with <code>/gvg revoke user</code>.</p>
+  </details>
+  <details>
+    <summary>Do I get updates?</summary>
+    <p>Yes. The app updates itself and shows Restart to update when ready.</p>
+  </details>
+  <details>
+    <summary>How do I uninstall it?</summary>
+    <ul>
+      <li><b>Windows:</b> Settings, Apps, Installed apps, Discord Broadcast, Uninstall.</li>
+      <li><b>Mac:</b> drag Discord Broadcast from Applications to the Bin.</li>
+    </ul>
+  </details>
+  <details>
+    <summary>Which Mac do I have?</summary>
+    <p>Apple menu, About This Mac. A chip named M1 or newer means Apple chip, and the Mac download works for you. Intel Macs are not supported yet.</p>
+  </details>
+  <details>
+    <summary>Mac says the app is damaged</summary>
+    <p>Remove the quarantine mark, then open it again:</p>
+    <pre><code>xattr -dr com.apple.quarantine "/Applications/Discord Broadcast.app"</code></pre>
+  </details>
+  <details>
+    <summary>Windows has no Run anyway button</summary>
+    <p>Right-click the file, choose Properties, tick Unblock, then OK and run it again.</p>
+  </details>
+  <details>
+    <summary>Is this a keylogger?</summary>
+    <p>No. It reacts only to the keys you picked, and it tells the bot only "start" or "stop" for them. Nothing else you type ever leaves your PC.</p>
+  </details>
+  <details>
+    <summary>Does the bot record or save my voice?</summary>
+    <p>No. The bot passes your voice on to the other team channels while you broadcast, then lets it go. It never writes any audio to disk.</p>
+  </details>
+  <details>
+    <summary>What is stored about me, and where?</summary>
+    <p>Only on your community's own server, never in an outside cloud:</p>
+    <ul>
+      <li>your Discord user ID</li>
+      <li>a random ID for this install of the app</li>
+      <li>when this PC was linked and when it was last seen</li>
+      <li>a fingerprint (hash) of this PC's sign-in token, not the token itself, so a copy of the file cannot sign anyone in</li>
+    </ul>
+    <p>A PC that stays unused for 90 days is signed out on its own.</p>
+  </details>
+  <details>
+    <summary>Is the connection encrypted?</summary>
+    <p>Yes. The app talks to the bot only over an encrypted connection (<code>wss://</code>). The bot's logs hide every token and code.</p>
+  </details>
+  <details>
+    <summary>Why should I trust it?</summary>
+    <ul>
+      <li>The <a href="https://github.com/OWNER/REPO">source code</a> is public.</li>
+      <li>Every release has fingerprints you can <a href="#verify">check</a>.</li>
+      <li>The app has no tracking or analytics. It talks only to your server's bot, and to GitHub to check for updates.</li>
     </ul>
   </details>
   <details id="verify">
@@ -238,37 +309,6 @@ footer p{margin:4px 0}
     </ul>
     <pre><code>shasum -a 256 ~/Downloads/DiscordBroadcast-macOS-arm64-Setup.pkg</code></pre>
     <p>If the numbers differ, delete the file and download again.</p>
-  </details>
-  <details>
-    <summary>Which Mac do I have?</summary>
-    <p>Apple menu, About This Mac. A chip named M1 or newer means Apple chip, and the Mac download works for you. Intel Macs are not supported yet.</p>
-  </details>
-  <details>
-    <summary>My keys do nothing in the game</summary>
-    <ul>
-      <li><b>Windows:</b> a game running as administrator can hide key presses. The app says so and offers Restart as administrator.</li>
-      <li><b>Mac:</b> in the app's Settings, open Input Monitoring settings and switch Discord Broadcast on.</li>
-    </ul>
-  </details>
-  <details>
-    <summary>Mac says the app is damaged</summary>
-    <p>Remove the quarantine mark, then open it again:</p>
-    <pre><code>xattr -dr com.apple.quarantine "/Applications/Discord Broadcast.app"</code></pre>
-  </details>
-  <details>
-    <summary>Windows has no Run anyway button</summary>
-    <p>Right-click the file, choose Properties, tick Unblock, then OK and run it again.</p>
-  </details>
-  <details>
-    <summary>How do I uninstall it?</summary>
-    <ul>
-      <li><b>Windows:</b> Settings, Apps, Installed apps, Discord Broadcast, Uninstall.</li>
-      <li><b>Mac:</b> drag Discord Broadcast from Applications to the Bin.</li>
-    </ul>
-  </details>
-  <details>
-    <summary>Do I get updates?</summary>
-    <p>Yes. The app updates itself and shows Restart to update when ready.</p>
   </details>
 </section>
 </main>
