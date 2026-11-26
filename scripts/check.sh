@@ -7,8 +7,13 @@ cd "$(dirname "$0")/.."
 echo "== build"
 "$DOTNET" build Kzg.slnx -c Release
 
-echo "== format"
-"$DOTNET" format Kzg.slnx --verify-no-changes
+# CI sets KZG_SKIP_FORMAT on the OSes where the result would repeat Linux's.
+if [ -n "${KZG_SKIP_FORMAT:-}" ]; then
+    echo "== format (skipped: KZG_SKIP_FORMAT)"
+else
+    echo "== format"
+    "$DOTNET" format Kzg.slnx --verify-no-changes
+fi
 
 # Every test project runs, each measuring the project it mirrors. Only Kzg.Core's lines have a floor.
 for project in tests/*/*.Tests.csproj; do

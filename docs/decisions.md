@@ -51,3 +51,6 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 - The default Bot address is set at build time through the `KzgDefaultHost` MSBuild property; a saved setting wins over it and the field stays editable.
 - The download page lives in `site/` and `.github/workflows/pages.yml` deploys it to GitHub Pages; the source keeps `OWNER/REPO` placeholders that the workflow fills from the repo, so no account name is committed in the page and release links always use `releases/latest/download`.
 - Update actions live in the tray menu on both OSes and the app menu on macOS; no Windows toasts (untestable dependency).
+- CI skips runs whose changes are all under `site/`, `docs/`, `infra/`, `spike/`, `.claude/`, Markdown files or the pages, terraform and release workflows; this is safe only while `main` has no required checks, and if one is added the filter needs a stub job that always reports.
+- The format check runs on Linux only in CI (`KZG_SKIP_FORMAT` skips it on macOS and Windows), since its result is the same on every OS.
+- CI and release runners use `macos-26`.
