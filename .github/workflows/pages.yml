@@ -1,0 +1,51 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "src/Kzg.App/Assets/icon-256.png"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+# Least privilege: read the repo, publish only the Pages artifact.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # The source keeps OWNER/REPO placeholders so it names no account; fill them from the repo running this workflow.
+      - name: Build site
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          mkdir _site
+          cp -R site/. _site/
+          cp src/Kzg.App/Assets/icon-256.png _site/icon.png
+          sed -i "s#OWNER/REPO#${REPO}#g" _site/index.html
+          if grep -n 'OWNER' _site/index.html; then
+            echo "unreplaced OWNER placeholder" >&2
+            exit 1
+          fi
+
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5

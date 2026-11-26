@@ -2,7 +2,7 @@
 
 This guide installs Discord Broadcast on Windows or macOS. Follow only the part for your computer. For running the bot, see the [host guide](host.md).
 
-The installers are not signed by Microsoft or Apple, so your computer will warn you. That does not mean the file is damaged. Only install a file you got from the person who runs your server.
+The installers are not signed by Microsoft or Apple, so your computer will warn you. That does not mean the file is damaged. Only install a file you got from the person who runs your server or from the [download page](https://amadeuspham.github.io/kzg-gvg-bot/).
 
 There is no phone app. Phone players hear broadcasts and talk in their own team channel as usual.
 
@@ -18,7 +18,7 @@ To remove it: Settings, Apps, Installed apps, Discord Broadcast, Uninstall.
 
 ## macOS
 
-1. Get the file for your Mac from the person who runs your server: `DiscordBroadcast-macOS-arm64-Setup.pkg` for an Apple chip (M1 or newer), or `DiscordBroadcast-macOS-x64-Setup.pkg` for an Intel Mac. Apple menu, About This Mac shows which you have.
+1. Get the file for your Mac from the person who runs your server: `DiscordBroadcast-macOS-arm64-Setup.pkg`. It needs an Apple chip (M1 or newer); Intel Macs are not supported yet. Apple menu, About This Mac shows which you have.
 2. (Recommended) Check the file. In Terminal: `shasum -a 256 ~/Downloads/DiscordBroadcast-macOS-arm64-Setup.pkg`. Compare it with the sum you were given; if they differ, delete the file and ask again.
 3. Double-click the file. macOS says it can't verify it. Choose Done, not Move to Bin.
 4. Open System Settings, Privacy & Security, scroll to Security, and choose Open Anyway next to the blocked `.pkg`. Enter your password or use Touch ID, choose Open Anyway again, and follow the installer.
