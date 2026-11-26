@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- The app version: the only place it is written. -->
-    <Version>0.2.2</Version>
+    <Version>0.3.0</Version>
     <Product>Kzg</Product>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
