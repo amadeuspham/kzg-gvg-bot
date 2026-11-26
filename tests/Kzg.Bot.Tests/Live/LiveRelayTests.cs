@@ -17,6 +17,7 @@ namespace Kzg.Bot.Tests.Live;
 /// the other VCs of its own group, and only those: not back into the speaker's VC, not the other group.
 /// Needs the data folder's <c>config.json</c> and <c>secrets.json</c>, and <c>KZG_LIVE=1</c>.
 /// </summary>
+[Collection(LiveCollection.Name)]
 public sealed class LiveRelayTests(ITestOutputHelper output)
 {
     private const string GuildName = "KZG GvG Test";
@@ -291,7 +292,7 @@ public sealed class LiveRelayTests(ITestOutputHelper output)
 
             await File.WriteAllTextAsync(Path.Combine(runDir, "summary.json"), JsonSerializer.Serialize(new { results, commandNames, stats }, new JsonSerializerOptions { WriteIndented = true }));
 
-            Assert.Equal(["connect", "gvg"], commandNames.Order());
+            Assert.Equal(Kzg.Discord.Commands.CommandSpec.Build(config).Select(c => c.Name).Order(), commandNames.Order());
             Assert.All(results, r => Assert.Empty(r.Violations));
             Assert.Equal("Attack 1", idle1.ChannelName);
             Assert.Equal(WireGroup.Attack, idle1.Group);

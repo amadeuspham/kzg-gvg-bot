@@ -18,6 +18,7 @@ namespace Kzg.Bot.Tests.Live;
 /// runs here: routing from every VC by every action, pre-roll, latency, a move mid-broadcast and a
 /// dropped app. The numbers are printed per scenario. Needs <c>KZG_LIVE=1</c>.
 /// </summary>
+[Collection(LiveCollection.Name)]
 public sealed class LiveScenarioTests(ITestOutputHelper output)
 {
     private static readonly string[] AllVcs = ["A1", "A2", "A3", "D1", "D2", "D3"];
