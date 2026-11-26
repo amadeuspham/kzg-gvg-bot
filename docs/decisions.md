@@ -52,6 +52,7 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 - The download page lives in `site/` and `.github/workflows/pages.yml` deploys it to GitHub Pages; the source keeps `OWNER/REPO` placeholders that the workflow fills from the repo, so no account name is committed in the page and release links always use `releases/latest/download`.
 - The docs site is VitePress built from `docs/` and served at `/docs/` next to the download page (`pages.yml`); the base path comes from `GITHUB_REPOSITORY`, `plan.md` and `decisions.md` are excluded with `srcExclude`, and a relative link from a published page to a file outside the site is rewritten to its github.com blob URL at build time, so the Markdown stays navigable on GitHub.
 - Update actions live in the tray menu on both OSes and the app menu on macOS; no Windows toasts (untestable dependency).
+- Key labels come from the current keyboard layout (the character the key types), looked up when shown; bindings stay stored by key code, so a layout change never moves one.
 - CI skips runs whose changes are all under `site/`, `docs/`, `infra/`, `spike/`, `.claude/`, Markdown files, `package.json`, `package-lock.json` or the pages, terraform and release workflows; this is safe only while `main` has no required checks, and if one is added the filter needs a stub job that always reports.
 - The format check runs on Linux only in CI (`KZG_SKIP_FORMAT` skips it on macOS and Windows), since its result is the same on every OS.
 - CI and release runners use `macos-26`.

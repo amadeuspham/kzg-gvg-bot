@@ -83,10 +83,20 @@ public readonly record struct InputBinding(InputKind Kind, string Name)
         _ => null,
     };
 
-    /// <summary>A name for people: "F8", "Left Shift", "Mouse side button 1", "Controller: left shoulder".</summary>
-    public string DisplayName => Kind switch
+    /// <summary>
+    /// A name for people: "F8", "Left Shift", "/", "Mouse side button 1", "Controller: left shoulder". Letter, digit
+    /// and punctuation keys show what the current layout types; read it on the UI thread (see <see cref="SystemKeyLabels"/>).
+    /// </summary>
+    public string DisplayName => NameWith(SystemKeyLabels.CharacterOf);
+
+    /// <summary>
+    /// <see cref="DisplayName"/> with <paramref name="layout"/> as the source of a key's character: for letters,
+    /// digits and punctuation keys, what it returns (letters in upper case) unless that is null, blank or a control
+    /// character, when the built-in symbol is used. Other keys ignore it.
+    /// </summary>
+    internal string NameWith(Func<KeyCode, string?> layout) => Kind switch
     {
-        InputKind.Key => KeyDisplay(Name),
+        InputKind.Key => KeyName(Name, layout),
         InputKind.Mouse => Name switch
         {
             nameof(MouseButton.Button3) => "Middle mouse button",
@@ -101,6 +111,63 @@ public readonly record struct InputBinding(InputKind Kind, string Name)
 
     private static bool IsPadName(string name) =>
         name.Length is > 0 and <= MaxNameLength && name.All(c => c is >= 'a' and <= 'z' or >= '0' and <= '9' or '_');
+
+    // Punctuation by US position: the symbol is the fallback when the layout can't say, and the layout's own
+    // character wins otherwise, since the same key types "-" on one layout and "/" on another.
+    private static readonly Dictionary<KeyCode, string> Symbols = new()
+    {
+        [KeyCode.VcMinus] = "-",
+        [KeyCode.VcEquals] = "=",
+        [KeyCode.VcOpenBracket] = "[",
+        [KeyCode.VcCloseBracket] = "]",
+        [KeyCode.VcBackslash] = "\\",
+        [KeyCode.VcSemicolon] = ";",
+        [KeyCode.VcQuote] = "'",
+        [KeyCode.VcBackQuote] = "`",
+        [KeyCode.VcComma] = ",",
+        [KeyCode.VcPeriod] = ".",
+        [KeyCode.VcSlash] = "/",
+    };
+
+    private static readonly Dictionary<KeyCode, string> NumPadSymbols = new()
+    {
+        [KeyCode.VcNumPadDivide] = "Numpad /",
+        [KeyCode.VcNumPadMultiply] = "Numpad *",
+        [KeyCode.VcNumPadSubtract] = "Numpad -",
+        [KeyCode.VcNumPadAdd] = "Numpad +",
+        [KeyCode.VcNumPadDecimal] = "Numpad .",
+        [KeyCode.VcNumPadEquals] = "Numpad =",
+    };
+
+    private static string KeyName(string name, Func<KeyCode, string?> layout)
+    {
+        if (!Enum.TryParse<KeyCode>(name, ignoreCase: false, out var code) || !Enum.IsDefined(code))
+        {
+            return KeyDisplay(name);
+        }
+        if (NumPadSymbols.TryGetValue(code, out var numpad))
+        {
+            return numpad;
+        }
+        if (name.StartsWith("VcNumPad", StringComparison.Ordinal) && name.Length == 9 && char.IsAsciiDigit(name[8]))
+        {
+            return "Numpad " + name[8];
+        }
+        var isSymbol = Symbols.TryGetValue(code, out var symbol);
+        if (isSymbol || IsLetterOrDigit(name))
+        {
+            var typed = layout(code);
+            if (!string.IsNullOrWhiteSpace(typed) && !typed.Any(char.IsControl))
+            {
+                return typed.Trim().ToUpperInvariant();
+            }
+        }
+        return symbol ?? KeyDisplay(name);
+    }
+
+    // SharpHook's key codes are scan codes, so letters and digits are not a contiguous range; the name is.
+    private static bool IsLetterOrDigit(string name) =>
+        name.Length == 3 && name.StartsWith("Vc", StringComparison.Ordinal) && char.IsAsciiLetterOrDigit(name[2]);
 
     private static string KeyDisplay(string name)
     {
