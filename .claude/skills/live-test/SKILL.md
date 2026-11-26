@@ -5,7 +5,7 @@ description: Run the live Discord tests against the real test server and confirm
 
 # live-test
 
-Rules: AGENTS.md hard rules 1, 2, 3 and 5. Details: `docs/guides/dev-setup.md` "Live tests".
+Rules: AGENTS.md hard rules 1, 2, 3 and 5. Details: `docs/guide/development.md` "Live tests".
 
 1. **Warn first, in chat, and wait for the user to say go.** The tests join the real test server's voice channels with every bot, and the Live tests use macOS `say` to play audio. Needs `.data/secrets.json` and open UDP to Discord voice. Without them, say what is missing and stop.
 2. Run:

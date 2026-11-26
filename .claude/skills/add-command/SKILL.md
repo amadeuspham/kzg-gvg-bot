@@ -20,5 +20,5 @@ Every step below names a real file. Skip a step only when the command truly need
    - `tests/Kzg.Discord.Tests/GvgCommandsTests.cs` (or `SetupCommandTests.cs` for setup/alerts): reply, config change, refusal, and no change from a non-admin.
    - `tests/Kzg.Bot.Tests/Host/` when host behaviour changes.
    - The live test `RegisteredCommands` in `tests/Kzg.Bot.Tests/Live/LiveRelayTests.cs` compares Discord's commands with `CommandSpec`; it picks the change up with no edit (do not run it without the user's go).
-7. **Docs**: `docs/contracts.md` ("Commands" paragraph lists every subcommand and its rules); `docs/plan.md` command list if the plan's list is meant to stay current; `README.md` and the relevant guide for user-visible behaviour; one line in `docs/decisions.md` if the design is not obvious.
+7. **Docs**: `docs/reference/contracts.md` ("Commands" paragraph lists every subcommand and its rules); `docs/plan.md` command list if the plan's list is meant to stay current; `README.md` and the relevant guide for user-visible behaviour; one line in `docs/decisions.md` if the design is not obvious.
 8. Run `scripts/check.sh`. Registration happens at bot start, so a new command shows in Discord only after the bot restarts; never restart the user's bot.

@@ -57,3 +57,8 @@ Thumbs.db
 infra/**/backend.hcl
 *.tfplan
 tfplan
+
+# Documentation site (VitePress)
+node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
