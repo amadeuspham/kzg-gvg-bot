@@ -61,7 +61,10 @@ public sealed class BotApp : IAsyncDisposable
         Engine.StatusChanged += SendStatus;
         Engine.LinksChanged += ResendBotDownNames;
         var auth = new AuthEndpoints(logins, setup.Discord, () => SignInFor(_config));
-        Endpoints.Map(web, Control, auth);
+        var proxies = setup.Config.TrustedProxies.Select(text => ConfigValidation.TryParseNetwork(text, out var network)
+            ? network
+            : throw new StartupException("config 'trustedProxies' holds an entry that is not an IP address or CIDR network")).ToList();
+        Endpoints.Map(web, Control, auth, new RateLimits(setup.Limits, proxies, loggers.CreateLogger("Kzg.Bot.Http"), TimeProvider.System));
     }
 
     public AudioEngine Engine { get; }
@@ -106,8 +109,10 @@ public sealed class BotApp : IAsyncDisposable
         builder.WebHost.ConfigureKestrel(kestrel =>
         {
             kestrel.AddServerHeader = false;
+            kestrel.Limits.MaxConcurrentConnections = setup.Limits.Connections;
             kestrel.Listen(endpoint);
         });
+        builder.Services.AddRateLimiter(_ => { });
         var web = builder.Build();
         return new BotApp(setup, web, devices, new ConnectCodes(setup.Time), new PendingLogins(setup.Time));
     }

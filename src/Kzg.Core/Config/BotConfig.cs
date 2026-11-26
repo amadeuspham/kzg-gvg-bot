@@ -37,6 +37,17 @@ public sealed record BotConfig
     /// <summary>The address Kestrel listens on, behind the reverse proxy: an IP and a port.</summary>
     public string Listen { get; init; } = "127.0.0.1:7878";
 
+    /// <summary>
+    /// The reverse proxies whose <c>X-Forwarded-For</c> names the player's address, as IPs or CIDR networks;
+    /// a request from anywhere else is limited by its own address and its header is ignored. The default is
+    /// the addresses a proxy on this computer, the LAN or a Docker network comes from, never a public one.
+    /// Empty ignores the header from everyone. Read at startup.
+    /// </summary>
+    public IReadOnlyList<string> TrustedProxies { get; init; } = DefaultTrustedProxies;
+
+    public static IReadOnlyList<string> DefaultTrustedProxies { get; } =
+        ["127.0.0.0/8", "::1", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7"];
+
     /// <summary>How far back a pressed key's relay starts, so the first word survives the press's trip.</summary>
     public int PrerollMs { get; init; } = 300;
 

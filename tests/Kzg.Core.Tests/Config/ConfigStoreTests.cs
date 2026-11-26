@@ -93,6 +93,7 @@ public sealed class ConfigStoreTests : IDisposable
         Assert.Null(config.GuildId);
         Assert.Null(config.PublicHost);
         Assert.Equal("127.0.0.1:7878", config.Listen);
+        Assert.Equal(BotConfig.DefaultTrustedProxies, config.TrustedProxies);
         Assert.Equal(300, config.PrerollMs);
         Assert.Equal(120_000, config.MaxHoldMs);
         Assert.Equal(90, config.DeviceTokenDays);
@@ -172,6 +173,14 @@ public sealed class ConfigStoreTests : IDisposable
         { "listen", c => c with { Listen = "localhost:7878" } },
         { "listen", c => c with { Listen = "::1:7878" } },
         { "listen", c => c with { Listen = "127.0.0.1:0" } },
+        { "trustedProxies[0]", c => c with { TrustedProxies = ["10.0.0.1/8"] } },
+        { "trustedProxies[1]", c => c with { TrustedProxies = ["10.0.0.0/8", "127.1"] } },
+        { "trustedProxies[0]", c => c with { TrustedProxies = ["proxy.example.org"] } },
+        { "trustedProxies[0]", c => c with { TrustedProxies = ["10.0.0.0/33"] } },
+        { "trustedProxies[0]", c => c with { TrustedProxies = ["10.0.0.0/+8"] } },
+        { "trustedProxies[0]", c => c with { TrustedProxies = ["fe80::1%1"] } },
+        { "trustedProxies[0]", c => c with { TrustedProxies = [""] } },
+        { "trustedProxies[0]", c => c with { TrustedProxies = [null!] } },
         { "prerollMs", c => c with { PrerollMs = 310 } },
         { "prerollMs", c => c with { PrerollMs = 1020 } },
         { "prerollMs", c => c with { PrerollMs = -20 } },
@@ -243,6 +252,33 @@ public sealed class ConfigStoreTests : IDisposable
     public void Kestrel_may_listen_on_any_ip_and_port(string listen)
     {
         Assert.Empty(ConfigValidation.Validate(Valid() with { Listen = listen }, Tokens));
+    }
+
+    [Theory]
+    [InlineData("203.0.113.9", "203.0.113.9/32")]
+    [InlineData("172.16.0.0/12", "172.16.0.0/12")]
+    [InlineData("::1", "::1/128")]
+    [InlineData("fc00::/7", "fc00::/7")]
+    public void A_trusted_proxy_is_an_address_or_a_network(string entry, string network)
+    {
+        Assert.Empty(ConfigValidation.Validate(Valid() with { TrustedProxies = [entry] }, Tokens));
+        Assert.True(ConfigValidation.TryParseNetwork(entry, out var parsed));
+        Assert.Equal(network, parsed.ToString());
+    }
+
+    [Fact]
+    public void The_default_trusted_proxies_are_valid_and_none_is_public()
+    {
+        Assert.Empty(ConfigValidation.Validate(Valid() with { TrustedProxies = BotConfig.DefaultTrustedProxies }, Tokens));
+        var networks = BotConfig.DefaultTrustedProxies.Select(text => ConfigValidation.TryParseNetwork(text, out var n) ? n : throw new InvalidOperationException(text)).ToList();
+        foreach (var address in new[] { "8.8.8.8", "203.0.113.1", "172.32.0.1", "2001:db8::1" })
+        {
+            Assert.DoesNotContain(networks, n => n.Contains(System.Net.IPAddress.Parse(address)));
+        }
+        foreach (var address in new[] { "127.0.0.1", "::1", "10.1.2.3", "172.18.0.2", "192.168.1.10", "fd12::1" })
+        {
+            Assert.Contains(networks, n => n.Contains(System.Net.IPAddress.Parse(address)));
+        }
     }
 
     [Fact]

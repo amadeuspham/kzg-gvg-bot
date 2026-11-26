@@ -34,6 +34,13 @@ public static class ConfigValidation
         {
             Error("listen", "an IP address and a port, such as 127.0.0.1:7878");
         }
+        for (var i = 0; i < config.TrustedProxies.Count; i++)
+        {
+            if (!TryParseNetwork(config.TrustedProxies[i], out _))
+            {
+                Error($"trustedProxies[{i}]", "an IP address or a CIDR network such as 10.0.0.0/8, with no bits set past its prefix");
+            }
+        }
         // The pre-roll, the 60 ms catch-up allowance and the longest playout delay fit the 1.2 s buffer.
         if (config.PrerollMs is < 0 or > MaxPrerollMs || config.PrerollMs % OpusFormat.FrameMs != 0)
         {
@@ -63,6 +70,35 @@ public static class ConfigValidation
         ValidateBots(config.Bots, checkSecrets ? secrets : null, Error);
         return errors;
     }
+
+    /// <summary>A <c>trustedProxies</c> entry: one address, or a network with nothing set past its prefix.</summary>
+    public static bool TryParseNetwork(string? text, out IPNetwork network)
+    {
+        network = default;
+        if (string.IsNullOrEmpty(text))
+        {
+            return false;
+        }
+        var slash = text.IndexOf('/', StringComparison.Ordinal);
+        if (!IsPlainAddress(slash < 0 ? text : text[..slash], out var address))
+        {
+            return false;
+        }
+        if (slash < 0)
+        {
+            network = new IPNetwork(address, address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6 ? 128 : 32);
+            return true;
+        }
+        // IPNetwork would quietly clear bits past the prefix; a typo such as 10.0.0.1/8 is refused instead.
+        return text[(slash + 1)..].All(char.IsAsciiDigit) && IPNetwork.TryParse(text, out network) && network.BaseAddress.Equals(address);
+    }
+
+    // IPAddress also reads "127.1" and "10" as IPv4, and IPv6 with a zone; a list of networks wants neither.
+    private static bool IsPlainAddress(string text, out IPAddress address) =>
+        IPAddress.TryParse(text, out address!)
+        && (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6
+            ? address.ScopeId == 0 && !text.Contains('%', StringComparison.Ordinal)
+            : text.Count(c => c == '.') == 3);
 
     private static bool IsListenAddress(string text) =>
         IPEndPoint.TryParse(text, out var endPoint) && endPoint.Port != 0
