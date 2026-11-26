@@ -5,7 +5,7 @@ namespace Kzg.Core.Jungle;
 public enum ClockState { Idle, Running, Paused, Over }
 
 /// <summary>
-/// Mirrors the in-game GvG timer, which counts down from 35:00 to 00:00.
+/// Mirrors the in-game match timer, which counts down from 35:00 to 00:00.
 /// One anchor says "at instant t the game showed r"; everything else derives from it.
 /// Not thread-safe: <see cref="JungleMatch"/> serialises access.
 /// </summary>

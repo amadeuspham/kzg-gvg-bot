@@ -7,8 +7,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets/app.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <!-- The server address the Discord sign-in starts with; players can change it in settings. Empty until the host is chosen. -->
-    <KzgDefaultHost></KzgDefaultHost>
+    <!-- The bot address the Discord sign-in starts with; players can change it on the sign-in screen. A build-time default so another team can ship its own: -p:KzgDefaultHost=bot.example.org wins. -->
+    <KzgDefaultHost Condition="'$(KzgDefaultHost)' == ''">kzg.duckdns.org</KzgDefaultHost>
     <!-- Where the app looks for updates: a GitHub repository address or a web folder of Velopack files (https). Empty keeps updates off.
          packaging/pack-app.sh passes KZG_UPDATE_FEED here. The environment variable of the same name overrides it at run time. -->
     <KzgUpdateFeed></KzgUpdateFeed>

@@ -19,11 +19,12 @@ public static class StatusIcon
     // Half the width of the microphone's strokes, in icon units.
     private const double Stroke = 0.045;
 
+    // Broadcasting carries the app icon's blurple; the other states keep their status colors.
     public static (byte R, byte G, byte B) ColorOf(TrayState state) => state switch
     {
         TrayState.Connected => (0x1F, 0x7A, 0x45),
         TrayState.Reconnecting => (0xE0, 0xA1, 0x00),
-        TrayState.Broadcasting => (0x1F, 0x5F, 0xBF),
+        TrayState.Broadcasting => (0x58, 0x65, 0xF2),
         TrayState.OpenMic => (0xE0, 0x35, 0x2B),
         _ => (0xB0, 0x2A, 0x2A),
     };

@@ -171,7 +171,7 @@ public sealed class SetupWizardTests : IDisposable
         Assert.Contains("<label for=\"token4\">D1 Broadcaster</label>", page);
         Assert.Contains("<label for=\"token6\">D3 Broadcaster</label>", page);
         Assert.DoesNotContain("Relay bot", page);
-        Assert.Contains("name it <i>KZG Broadcaster</i>", page);
+        Assert.Contains("name it <i>Broadcast Relay</i>", page);
     }
 
     [Fact]
