@@ -31,6 +31,8 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 ## Hosting
 
 - The bot runs on Windows, Linux (Docker for glibc older than 2.38) or an Apple Silicon Mac. Intel Macs are not supported.
+- `/gvg stop` is saved in `config.json`, so it survives restarts.
+- Releases carry no bot archive: the bot runs only on our server, which builds it from source with Docker. Other hosts build with `packaging/publish-bot.sh`.
 - OCI infrastructure is changed only through `infra/oci` and the Terraform workflow, never the console. State moved from Resource Manager to an Object Storage bucket (native `oci` backend, conditional-write lock): Resource Manager holds one config per stack, so PR plans would overwrite what the next apply uses, and its job logs carry the full plan.
 - CI authenticates to OCI with API keys of two IAM users, a read-only one for plans and a write one for applies behind a reviewed, main-only GitHub environment. OCI federation with GitHub OIDC was left out: more setup than a single-maintainer repo needs.
 - Terraform output stays out of the public Actions logs and artifacts; only resource addresses and actions are shown, and an apply runs only if its fresh plan lists the same changes that were approved.
@@ -42,3 +44,4 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 ## Release
 
 - The release workflow ends in one job that tags `v<version>` and creates the GitHub Release; app packs set `KZG_UPDATE_FEED` to the repo address so Velopack reads updates from release assets. Per-job artifacts hold only release files, so the last job can attach everything.
+- Mac installer and portable files are named `macOS-arm64` for players; the Velopack channel, RID, `.nupkg`, `RELEASES-*` and `*.json` keep `osx-arm64`, because installed apps update from that channel. `pack-app.sh` does the rename.

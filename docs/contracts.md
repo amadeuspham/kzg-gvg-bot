@@ -182,6 +182,10 @@ With no `config.json` in the data folder, or with `--setup`, the real bot serves
 - **Invite links.** `https://discord.com/oauth2/authorize?client_id=<application>&scope=bot&permissions=87032832` (View Channel, Connect, Speak, Move Members, Change Nickname); the first bot adds `applications.commands` and Send Messages (87034880). Once the first bot is in exactly one server, the others' links name it (`guild_id`, `disable_guild_select=true`).
 - **Finish.** The server is the one every bot is in, or the admin's pick among several. `SecretsStore.Save` writes each token as `relay<field>`, so fields 1 and 4 give `relay1` and `relay4`, keeps every other entry and removes the earlier config's bot tokens no longer used, owner-only from the first byte. `SetupPlans.WithBots` writes the bots (the first pasted primary), `guildId` and `publicHost`, keeping the other settings; a bot already known by its user ID keeps its channel, and a different server drops the teams and alerts channel. A `groups.*.shotCallerUserId` left in an older `config.json` is read and dropped, whatever its value, and never written. Sign-in left on without its client secret is turned off.
 
+## Stopped relays
+
+`BotConfig.Stopped` (`stopped` in `config.json`, default `false`) is what `/gvg stop` sets and `/gvg start` clears. The bot starts with its relays out of voice while it is set. It is additive: a config without the field loads as running, and the schema version stays 1.
+
 ## Keeping a Mac awake
 
 On macOS the real bot runs `/usr/bin/caffeinate -i -s -w <its pid>` for as long as it runs (`KeepAwake`): idle sleep, and system sleep on power, are held off, and the hold ends with the bot's process even after a crash. `packaging/bot/install-mac.command` installs `~/Library/LaunchAgents/com.kzg.bot.plist`: `RunAtLoad`, `KeepAlive` with `SuccessfulExit` false (restart unless it exited 0), `ThrottleInterval` 10, `ProcessType` `Interactive`, data in `~/Library/Application Support/Kzg`, and `--log-file ~/Library/Logs/Kzg/bot.log`, with launchd's own output to `/dev/null`, since launchd never trims a file.

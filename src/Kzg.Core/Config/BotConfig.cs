@@ -31,6 +31,9 @@ public sealed record BotConfig
     /// <summary>The text channel the primary bot posts problems to, such as a relay bot gone offline; null for none.</summary>
     public ChannelId? AlertsChannelId { get; init; }
 
+    /// <summary>True after <c>/gvg stop</c>: the bot starts with its relays out of voice, so a restart (such as a deploy) doesn't undo the stop.</summary>
+    public bool Stopped { get; init; }
+
     /// <summary>The address Kestrel listens on, behind the reverse proxy: an IP and a port.</summary>
     public string Listen { get; init; } = "127.0.0.1:7878";
 

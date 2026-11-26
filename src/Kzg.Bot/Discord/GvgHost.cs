@@ -93,7 +93,17 @@ public sealed class GvgHost : IGvgControl
         await _editing.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await _discord.ApplyAsync(_bot.Config, running, cancellationToken).ConfigureAwait(false);
+            // Saved first so the stop survives a restart; an unwritable file leaves everything as it was.
+            var config = _bot.Config with { Stopped = !running };
+            switch (_store.Save(config, _secrets))
+            {
+                case FileSave.Invalid invalid:
+                    throw new InvalidOperationException("That would break the config: " + string.Join("; ", invalid.Errors.Select(e => e.ToString())));
+                case FileSave.Unwritable:
+                    throw new InvalidOperationException("The config file couldn't be written, so nothing changed. Check the bot's data folder.");
+            }
+            _bot.Reconfigure(config);
+            await _discord.ApplyAsync(config, running, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
