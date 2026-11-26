@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
-# Regenerates app.ico, AppIcon.icns and icon-256.png from icon.svg. macOS only: it uses qlmanage
-# (renders the SVG, filters included), sips, iconutil and python3 (standard library only).
+# Regenerates app.ico, AppIcon.icns and icon-256.png from icon.svg. macOS only: it uses headless Google Chrome
+# (renders the SVG, filters included, on a transparent background), sips, iconutil and python3 (standard library only).
+# Not qlmanage: it paints the SVG on opaque white, which put a white frame around every icon.
 set -euo pipefail
 cd "$(dirname "$0")"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-qlmanage -t -s 1024 -o "$work" icon.svg >/dev/null 2>&1
-master="$work/icon.svg.png"
-[ -s "$master" ] || { echo "qlmanage produced no render" >&2; exit 1; }
+chrome="${CHROME:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
+[ -x "$chrome" ] || { echo "Google Chrome not found; set CHROME to a Chromium binary" >&2; exit 1; }
+printf '<!doctype html><style>html,body{margin:0;background:transparent}img{display:block;width:1024px;height:1024px}</style><img src="file://%s/icon.svg">' "$PWD" >"$work/render.html"
+master="$work/master.png"
+"$chrome" --headless=new --disable-gpu --hide-scrollbars --default-background-color=00000000 \
+  --window-size=1024,1024 --force-device-scale-factor=1 --screenshot="$master" "file://$work/render.html" >/dev/null 2>&1 || true
+[ -s "$master" ] || { echo "Chrome produced no render" >&2; exit 1; }
 
 sips -z 256 256 "$master" --out icon-256.png >/dev/null
 
