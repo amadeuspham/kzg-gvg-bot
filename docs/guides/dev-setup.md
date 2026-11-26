@@ -19,8 +19,18 @@ What: what a machine needs to build, test and live-test kzg-gvg-bot, and how to 
 | Real-clock tests (`KZG_REALTIME=1`) | Any OS, a quiet machine: they assert timing ranges against the wall clock. `KZG_REALTIME=1 dotnet test tests/Kzg.Bot.Tests -c Release`. |
 | Load test (`KZG_LOAD=1`) | macOS, for `say`. Five minutes by default. |
 | Linux bot | glibc 2.38 or newer (Ubuntu 24.04). Older hosts use the Docker image. |
-| Packaging | The host OS for its own target; macOS packages build on a Mac. See README "Packaging". |
+| Packaging | The host OS for its own target; macOS packages build on a Mac. See "Packaging" below. |
 | Mac release signing | The maintainer's self-signed code-signing certificate as a password-protected `.p12`, kept outside git; set as a CI secret when releasing. |
+
+## Packaging
+
+The version is `<Version>` in `Directory.Build.props`. The release workflow (`.github/workflows/release.yml`, run by hand) builds and signs the app and creates the GitHub Release; the bot is not released.
+
+- `packaging/publish-bot.sh --rid win-x64|linux-x64|linux-arm64|osx-arm64`: the bot as a self-contained folder and a `.zip` or `.tar.gz`, with libdave 1.2.1.9. The macOS one holds `install-mac.command`, which installs a launchd service for the user; Intel Macs aren't supported. Releases carry no bot archive; build it with this script.
+- `docker build -f packaging/docker/Dockerfile -t kzg-bot .`: the bot on Ubuntu 24.04, for Linux hosts whose glibc is older than 2.38.
+- `packaging/docker/compose.yaml`: the bot plus Caddy for automatic HTTPS. Put the domain in `packaging/docker/kzg.env`, then `docker compose up -d` in that folder.
+- `packaging/pack-app.sh --rid win-x64|osx-arm64|osx-x64`: the app as an unsigned Velopack installer, portable zip and update feed. The macOS packages build on a Mac only. The installer files are named `DiscordBroadcast-<platform>-Setup.*` and `-Portable.zip`; the update-feed files keep the `KZGBroadcast` id. The app icons are rendered from `src/Kzg.App/Assets/icon.svg` by `src/Kzg.App/Assets/render-icons.sh` (macOS only; needs Google Chrome, which renders them with a transparent background). vpk refuses to pack the Windows app until `Program.Main` calls `VelopackApp.Build().Run()`; `--allow-missing-velopack-hook` skips that check for trial builds.
+- Default bot address: the sign-in screen's Bot address field is filled from the address built into the app, set at build time with `-p:KzgDefaultHost=<host>` (for example `bot.example.org`). An address a player saved wins over it.
 
 ## Local data and secrets
 

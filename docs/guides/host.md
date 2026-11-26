@@ -142,6 +142,16 @@ The setup link works once, in one browser, and only from the computer the bot ru
 
 Each player installs Discord Broadcast (see the [unsigned-install guide](unsigned-install.md)) and chooses Sign in with Discord. The sign-in screen has a "Bot address" field: it comes filled in with the address the app was built with, and a player whose bot lives elsewhere types the public address from above there. If that fails, they type `/connect` in Discord and paste the code into Discord Broadcast (it works once, for 10 minutes). Players cannot connect until the public address is set.
 
+### Helping players install
+
+Players get the app from the [download page](https://amadeuspham.github.io/kzg-gvg-bot/) and follow the [unsigned-install guide](unsigned-install.md), which leaves out the technical fixes. Keep these for when a player asks you:
+
+- **Check a file.** Every release lists checksums in `SHA256SUMS`. Windows (PowerShell): `Get-FileHash .\DiscordBroadcast-win-x64-Setup.exe -Algorithm SHA256`. Mac (Terminal): `shasum -a 256 ~/Downloads/DiscordBroadcast-macOS-arm64-Setup.pkg`. The sums must match; if not, delete the file and download it again.
+- **Windows has no Run anyway button.** In PowerShell: `Unblock-File .\DiscordBroadcast-win-x64-Setup.exe`.
+- **macOS says the app is damaged or can't be checked.** Remove the quarantine mark, then open the app again: `xattr -dr com.apple.quarantine "/Applications/Discord Broadcast.app"`.
+- **Remove Open at login by hand.** On a Mac delete `~/Library/LaunchAgents/app.kzg.login.plist`; on Windows turn off the `Discord Broadcast` entry under Settings, Apps, Startup.
+- **Mac input permission.** The app needs Input Monitoring only, not Accessibility. Windows reads keys with Raw Input, with a low-level hook as fallback.
+
 ## If something goes wrong
 
 - **Setup link lost or already used.** Restart the bot; it prints a new one. (Docker: `docker compose restart bot`. Mac: run `install-mac.command` again. Windows: restart the `Kzg bot` task. Linux: `sudo systemctl restart kzg-bot`.)

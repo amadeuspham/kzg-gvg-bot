@@ -43,7 +43,7 @@ Read these first, in order: [docs/plan.md](docs/plan.md) (what and why), [docs/d
 - Comments explain why, never what. No emojis in code or docs. Do not create new documentation files unprompted; update the existing ones.
 - Stay in scope: no drive-by refactors, renames or dependency bumps. Validate at boundaries (Discord, WebSocket, files), not for impossible cases.
 - A design decision that is not obvious goes in [docs/decisions.md](docs/decisions.md) as one line.
-- Doc changes that must travel with code: user-visible control or setting changes go in `README.md` and the relevant guide; wire or engine changes go in `docs/contracts.md`.
+- Doc changes that must travel with code: user-visible control or setting changes go in the player guide ([docs/guides/unsigned-install.md](docs/guides/unsigned-install.md)), and in the host guide when they affect hosting; wire or engine changes go in `docs/contracts.md`.
 
 ## Commits
 
