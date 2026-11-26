@@ -82,6 +82,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _snapshot = connection.Snapshot;
         _matcher = new BindingMatcher(settings.Bindings);
         ServerHostText = settings.ServerHost;
+        // A first run starts with the build's default address; show it so the player sees where the sign-in goes and can change it.
+        _serverFieldOpen = settings.DeviceToken is null && AppInfo.DefaultHost.Length > 0 && settings.ServerHost == AppInfo.DefaultHost;
         _inputMonitoring = permissions.InputMonitoring;
 
         _matcher.Event += OnMatch;
@@ -300,7 +302,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <summary>The badge and warnings: everywhere except the settings page.</summary>
     public bool ShowStatus => !ShowSettingsPage;
 
-    /// <summary>The server address, tucked away behind "Change server" unless there is none yet.</summary>
+    /// <summary>The server address, tucked away behind "Change bot address" while it is the build's default on a first run, or when there is none yet.</summary>
     public bool ShowServerField => _serverFieldOpen || _settings.ServerHost.Length == 0;
 
     /// <summary>A link attempt is under way: the code is being tried, or the browser sign-in is waiting.</summary>
@@ -462,7 +464,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public string LinkedAs => _snapshot.DisplayName is { } name ? $"Signed in as {name}" : "Signed in";
 
-    public string ServerLine => $"Server: {_settings.ServerHost}";
+    public string ServerLine => $"Bot address: {_settings.ServerHost}";
 
     public bool NotifyOnDisconnect
     {
@@ -650,7 +652,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         var host = ServerHostText.Trim();
         if (host.Length == 0 || !ConnectCode.IsValidHost(host))
         {
-            LinkMessage = "Enter the server address first, like gvg.example.com.";
+            LinkMessage = "Enter the bot address first, like bot.example.org.";
             RefreshAll();
             return;
         }
@@ -921,7 +923,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                     LinkFailure.BadCode => new(Tone.Red, Icons.LinkOff, "That code isn't valid", "Type /connect in Discord for a new one"),
                     LinkFailure.CodeUsed => new(Tone.Red, Icons.LinkOff, "That code was already used", "Type /connect in Discord for a new one"),
                     LinkFailure.CodeExpired => new(Tone.Red, Icons.LinkOff, "That code expired", "Type /connect in Discord for a new one"),
-                    LinkFailure.NotMember => new(Tone.Red, Icons.LinkOff, "You're not in the server", "Join the guild's Discord, then try again"),
+                    LinkFailure.NotMember => new(Tone.Red, Icons.LinkOff, "You're not in the server", "Join your team's Discord server, then try again"),
                     LinkFailure.VersionMismatch => new(Tone.Red, Icons.PlugConnectedX, "This app is out of date", "Install the newest version"),
                     LinkFailure.SignInTimedOut => new(Tone.Red, Icons.LinkOff, "Sign-in took too long", "Try again below"),
                     LinkFailure.Interrupted => new(Tone.Red, Icons.LinkOff, "The connection dropped", "Type /connect in Discord for a new code"),
@@ -994,7 +996,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             LinkFailure.TokenExpired => "Link expired. Run /connect or sign in again.",
             LinkFailure.Revoked => "Link revoked. Run /connect or sign in again.",
             LinkFailure.ReplacedByNewerApp => "Linked on another device. Restart this app to take the link back.",
-            LinkFailure.NotMember => "Join the guild's Discord server, then try again.",
+            LinkFailure.NotMember => "Join your team's Discord server, then try again.",
             LinkFailure.VersionMismatch => "Install the newest version of this app.",
             LinkFailure.SignInTimedOut => "Sign-in took too long. Try again.",
             LinkFailure.Interrupted => "The connection dropped while linking. Run /connect for a new code.",

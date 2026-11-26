@@ -4,7 +4,7 @@
 
 ## Context
 
-The guild plays Where Winds Meet guild wars in two big teams, Attack and Defense. Each big team has 3 small teams of 5, and each small team sits in its own Discord voice channel (VC). Players talk freely in their small VC using Discord voice activity. Today they reach the whole big team by pressing push-to-talk on TeamSpeak.
+Players take part in team voice events in two big teams, Attack and Defense. Each big team has 3 small teams of 5, and each small team sits in its own Discord voice channel (VC). Players talk freely in their small VC using Discord voice activity. Today they reach the whole big team by pressing push-to-talk on TeamSpeak.
 
 That breaks for two kinds of players:
 - Some can't install TeamSpeak, because its phone app is blocked in their country.
@@ -16,13 +16,13 @@ Discord has no whisper, and a bot can't see key presses. So we build:
 
 Phone players have no app, so they can't trigger a broadcast. They hear every broadcast in their own team channel and talk in that channel (decision: the voice keyword was built, then removed entirely).
 
-The outcome: the whole guild runs on Discord for team comms. Small-team chatter stays in the small team. Anyone can reach their 15. The two shot callers keep using TeamSpeak to talk to each other (your decision).
+The outcome: the whole community runs on Discord for team comms. Small-team chatter stays in the small team. Anyone can reach their 15. The two shot callers keep using TeamSpeak to talk to each other (your decision).
 
 **Settled in the interview**
 - **Voice and teams.** Everyone uses Discord voice activity, and the PC push-to-talk key is only for broadcasting to the 15. Your team is set by the VC you're in. Several broadcasters at once are mixed together. No tones. A 300 ms pre-roll buffer catches the first word.
 - **Setup.** Admins use slash commands. One Discord server. Local git only, with lean conventions.
-- **Hosting.** The bot runs on the guild's existing home server, which already hosts TeamSpeak and websites. The app connects to a stable address (e.g. `wss://gvg.<domain>`) through the server's existing HTTPS reverse proxy. No tunnel.
-- **Linking.** Players link the app **once** by either pasting a `/connect` code or signing in with Discord. The app then keeps a long-lived token, so there's nothing to do on war nights.
+- **Hosting.** The bot runs on the community's existing home server, which already hosts TeamSpeak and websites. The app connects to a stable address (e.g. `wss://bot.<domain>`) through the server's existing HTTPS reverse proxy. No tunnel.
+- **Linking.** Players link the app **once** by either pasting a `/connect` code or signing in with Discord. The app then keeps a long-lived token, so there's nothing to do on event nights.
 - **Stack and app.** .NET everywhere, starting with a voice-library test. The app is unsigned, installed with Velopack, and updated manually for now. English UI. Inputs are keyboard, mouse side buttons and controller.
 - **Shot callers.** They get one extra: an **open-mic toggle**, which broadcasts to their own big team without holding a key.
 - **Dropped.** All-call and caller-to-caller keys, since shot callers use TeamSpeak for that.
@@ -116,7 +116,7 @@ interface IAudioSource { SourceId Id { get; } TargetSpec Targets { get; } FrameR
 interface IOpusCodecFactory { IOpusDecoder Decoder(); IOpusEncoder Encoder(int bitrate); }
 ```
 
-In phase 2, Gengfu's jungle calls plug in as an `IAudioSource` with `Targets = Groups{...}`.
+In phase 2, The jungle calls plug in as an `IAudioSource` with `Targets = Groups{...}`.
 
 **WebSocket `/ws`** (JSON text, `{"v":1,"type":...}`, max 4 KB, IDs as strings, `wss://` only)
 
@@ -136,7 +136,7 @@ In phase 2, Gengfu's jungle calls plug in as an `IAudioSource` with `Targets = G
 
 **`config.json`** (per-OS app-data folder, `--data-dir` overrides):
 ```json
-{ "schemaVersion": 1, "guildId": "", "adminRoleId": null, "publicHost": "gvg.example.com",
+{ "schemaVersion": 1, "guildId": "", "adminRoleId": null, "publicHost": "bot.example.org",
   "listen": "127.0.0.1:7878", "prerollMs": 300, "maxHoldMs": 120000, "deviceTokenDays": 90,
   "oauth": { "enabled": true, "clientId": "" },
   "groups": { "attack": { "channels": [], "shotCallerUserId": null }, "defense": { "channels": [], "shotCallerUserId": null } },
@@ -222,8 +222,8 @@ Do part A, part B for the first 5 bots and part D before step 0a. Parts C and E 
 5. Open the generated URL in your browser, pick `KZG GvG Test`, and click **Authorize**. The bot now appears offline in the member list.
 
 **C. Discord sign-in.** Needed before step 14; do it on `KZG Relay 1` only.
-1. Open **OAuth2**, then **Redirects**, and add `https://gvg.<your-domain>/auth/callback`. Save.
-2. On the same page, click **Reset Secret** under Client Secret. Save it in your password manager as `KZG oauth secret`.
+1. Open **OAuth2**, then **Redirects**, and add `https://bot.<your-domain>/auth/callback`. Save.
+2. On the same page, click **Reset Secret** under Client Secret. Save it in your password manager as `Broadcast oauth secret`.
 
 **D. Hand the tokens to this machine.** Never through chat.
 1. After step 1 (scaffold) has run, open `.data/secrets.json` in the repo on this machine. It's git-ignored, and an example file sits next to it.
@@ -262,7 +262,7 @@ Roles are roster agents. "check" means `scripts/check.sh` is green.
 | 12 | PC app | engineer | `src/Kzg.App/`, `src/Kzg.App.Input/` | 0c, 2 | link by code or Discord sign-in; keyboard/mouse via SharpHook in the app process and the controller via SDL3 in a helper child process (same exe, helper argument, events over stdout), never `SDL_Init` in the hook's process, because on macOS it stops the key hook (step 0c, `spike/input/README.md`); fallback if that fails: an input mode setting, "Keyboard & mouse" or "Controller", one at a time; bindings for the chosen mode; no synthetic input in tests unless the user is warned first and says go; open-mic toggle for callers; the status badge and warnings above; permission help; Windows run-as-admin option. Tests: binding matcher, state transitions Connected/Reconnecting/Disconnected/Broadcasting with `FakeTimeSource` |
 | 12b | Listen-only key input | engineer | `src/Kzg.App.Input/` | 12 | The OS never waits for the app, so a slow app can't lag the computer or lose the hook. macOS: a listen-only event tap (`kCGEventTapOptionListenOnly`) instead of libuiohook's active tap; the watchdog re-enables a tap that macOS disables. Windows: Raw Input with `RIDEV_INPUTSINK` for keyboard and mouse instead of the low-level hook, which Windows removes silently after its timeout. If Raw Input misses keys under an elevated game, keep the low-level hook, reinstall it every few seconds, and detect a dead hook on Windows too. Bindings, side buttons and the controller helper keep working; no synthetic input in tests unless the user is warned first and says go. Tests: the matcher fed from each source; watchdog recovery. |
 | 13 | Packaging + docs | engineer | `packaging/`, `docs/guides/`, `README.md` | 11, 12 | Velopack installers for win-x64, osx-arm64 and osx-x64; self-contained bot per OS with native libs. Host guide covers bot accounts, permissions (Connect/Speak/Move Members), the OAuth redirect, and nginx/Caddy snippets with WebSocket upgrade. Unsigned-install guide. |
-| 14 | End-to-end verification: automated parts here, human parts by you on the other machine | specialist, with you and guild testers | none (read-only) | 13 | the Verification section below |
+| 14 | End-to-end verification: automated parts here, human parts by you on the other machine | specialist, with you and community testers | none (read-only) | 13 | the Verification section below |
 
 **Parallel:** 0a, 0b, 0c and 1 run together. After step 2: 3, 4, 5, 6 and 12 run together (separate folders). Steps 7, 8, 9, 10, 11 and 13 follow their dependencies.
 

@@ -23,6 +23,7 @@
 #                          (https://github.com/<owner>/<repo>) or a web folder holding the Velopack files.
 #                          It is built into the app. Left unset, the app never looks for updates; the same
 #                          variable set when the app runs overrides what was built in.
+# The icons (app.ico, AppIcon.icns) are rendered from Assets/icon.svg by src/Kzg.App/Assets/render-icons.sh.
 # Windows packs build on any OS. macOS packs build only on macOS: vpk needs Apple's tools. The Velopack
 # tool's version is the one the app's Velopack package must have.
 set -euo pipefail
@@ -30,9 +31,12 @@ set -euo pipefail
 VELOPACK_VERSION=1.2.161
 # Windows installs to %LOCALAPPDATA%\<PACK_ID> and removes that folder on uninstall. The app keeps its
 # settings in %LOCALAPPDATA%\Kzg\App and the bot its data in %LOCALAPPDATA%\Kzg, so the id is not "Kzg".
-# The id names the install folder and the installer files; the title below is what players see.
+# The id names the install folder and the update feed, so it stays even though players never see it: changing
+# it would strand installed apps. The title below is what players see (the Mac .app is named after it);
+# DISPLAY_PREFIX names the installer files they download.
 PACK_ID=KZGBroadcast
-PACK_TITLE="KZG Broadcast"
+PACK_TITLE="Discord Broadcast"
+DISPLAY_PREFIX=DiscordBroadcast
 
 repo="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo"
@@ -100,16 +104,19 @@ echo "== pack"
     --packId "$PACK_ID" --packTitle "$PACK_TITLE" --packAuthors "$PACK_TITLE" --icon "$icon" --packVersion "$version" \
     --packDir "$publish" --mainExe "$mainExe" --runtime "$rid" --channel "$rid" \
     --outputDir "$feed" ${check[@]+"${check[@]}"} ${sign[@]+"${sign[@]}"}
-# Players see the installer names, so the Mac ones say macOS. Only the two user-facing files are renamed:
-# the channel, the RID, the .nupkg, RELEASES-* and *.json names stay osx-*, because installed apps update
-# from the osx-arm64 channel. The assets json lists the installers, so it is kept in step.
-if [ "$os" = '[osx]' ]; then
-    for kind in Setup.pkg Portable.zip; do
-        old="$PACK_ID-$rid-$kind"; new="$PACK_ID-macOS-${rid#osx-}-$kind"
-        [ -f "$feed/$old" ] || { echo "pack-app: vpk did not write $old" >&2; exit 1; }
-        mv "$feed/$old" "$feed/$new"
-        sed -i.bak "s/$old/$new/g" "$feed/assets.$rid.json" && rm -f "$feed/assets.$rid.json.bak"
-    done
-fi
+# Players see the installer names, so they carry the display prefix and the Mac ones say macOS. Only the
+# two user-facing files per pack are renamed: the channel, the RID, the .nupkg, RELEASES-* and *.json names
+# keep $PACK_ID and the RID, because installed apps update from that channel. The assets json lists the
+# installers, so it is kept in step.
+case "$rid" in
+    win-x64) label="$rid"; kinds="Setup.exe Portable.zip" ;;
+    *) label="macOS-${rid#osx-}"; kinds="Setup.pkg Portable.zip" ;;
+esac
+for kind in $kinds; do
+    old="$PACK_ID-$rid-$kind"; new="$DISPLAY_PREFIX-$label-$kind"
+    [ -f "$feed/$old" ] || { echo "pack-app: vpk did not write $old" >&2; exit 1; }
+    mv "$feed/$old" "$feed/$new"
+    sed -i.bak "s/$old/$new/g" "$feed/assets.$rid.json" && rm -f "$feed/assets.$rid.json.bak"
+done
 echo "output: $feed"
 ls -1 "$feed"

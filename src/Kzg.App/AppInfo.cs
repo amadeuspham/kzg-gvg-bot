@@ -4,7 +4,7 @@ namespace Kzg.App;
 
 public static class AppInfo
 {
-    public const string Name = "KZG Broadcast";
+    public const string Name = "Discord Broadcast";
 
     /// <summary>The build's version, from <c>Directory.Build.props</c>, without a source-control suffix.</summary>
     public static string Version { get; } =

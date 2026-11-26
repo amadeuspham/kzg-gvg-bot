@@ -527,7 +527,7 @@ public sealed class MainViewModelTests : IDisposable
 
         _vm.SignInWithDiscordCommand.Execute(null);
 
-        Assert.Contains("server address", _vm.LinkMessage);
+        Assert.Contains("bot address", _vm.LinkMessage);
         Assert.Empty(_platform.OpenedUrls);
         Assert.Empty(_transports.Created);
     }
@@ -1252,6 +1252,33 @@ public sealed class MainViewModelTests : IDisposable
     // ----- Settings -----
 
     [Fact]
+    public void A_first_run_starts_with_the_build_default_bot_address_filled_in_and_visible()
+    {
+        Assert.NotEmpty(AppInfo.DefaultHost);
+        Assert.Equal(AppInfo.DefaultHost, AppSettings.CreateDefault().ServerHost);
+
+        Build(AppSettings.CreateDefault());
+
+        Assert.Equal(AppInfo.DefaultHost, _vm.ServerHostText);
+        Assert.True(_vm.ShowServerField);
+    }
+
+    [Fact]
+    public void A_saved_bot_address_wins_over_the_build_default()
+    {
+        Build(AppSettings.CreateDefault() with { ServerHost = Host });
+
+        Assert.Equal(Host, _vm.ServerHostText);
+        Assert.NotEqual(AppInfo.DefaultHost, _vm.ServerHostText);
+    }
+
+    [Fact]
+    public void The_app_is_named_Discord_Broadcast()
+    {
+        Assert.Equal("Discord Broadcast", AppInfo.Name);
+    }
+
+    [Fact]
     public void Settings_are_collapsed_by_default_and_show_who_and_where_and_the_version()
     {
         StartLinkedOnline();
@@ -1261,7 +1288,7 @@ public sealed class MainViewModelTests : IDisposable
         _vm.ShowSettings = true;
 
         Assert.Equal("Signed in as Alex", _vm.LinkedAs);
-        Assert.Equal($"Server: {Host}", _vm.ServerLine);
+        Assert.Equal($"Bot address: {Host}", _vm.ServerLine);
         Assert.StartsWith("Version ", _vm.Version, StringComparison.Ordinal);
     }
 
@@ -1323,7 +1350,7 @@ public sealed class MainViewModelTests : IDisposable
     {
         StartLinkedOnline();
 
-        Assert.Equal("KZG Broadcast: Connected", _vm.TrayToolTip);
+        Assert.Equal("Discord Broadcast: Connected", _vm.TrayToolTip);
     }
 
     [Fact]
@@ -1336,7 +1363,7 @@ public sealed class MainViewModelTests : IDisposable
         _vm.OpenMicIsOn = true;
         transport.Receive(Messages.Status(active: [WireAction.OpenMic], openMic: true));
         Assert.Equal(TrayState.OpenMic, _vm.Tray);
-        Assert.Equal("KZG Broadcast: Open mic on", _vm.TrayToolTip);
+        Assert.Equal("Discord Broadcast: Open mic on", _vm.TrayToolTip);
 
         // Holding a key on top of open mic keeps the mic: it is still live when the key comes up.
         _input.Raise(F8, true);

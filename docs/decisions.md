@@ -12,7 +12,7 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 - A relay bot that is moved goes straight back to its own channel; only `/gvg bot assign` changes a bot's channel.
 - A relay bot is named after the team channel it is in now ("A1 Broadcaster"), worked out from the config and never stored, and sets that as its nickname when it can; its `tokenRef` stays `relay<setup field>`, which is how `/gvg setup` puts each bot in the channel its setup field named.
 - The bot restarts itself at a 512 MB memory cap; a daily restart is optional.
-- Jungle calls come from the bot as an engine `IAudioSource`, driven by `/jungle` only (no app or `/ws` change). Any guild member may run it; `/gvg` stays admin-only.
+- Jungle calls come from the bot as an engine `IAudioSource`, driven by `/jungle` only (no app or `/ws` change). Any server member may run it; `/gvg` stays admin-only.
 - `/jungle` replies are ephemeral, like every other command.
 - The jungle clock lives in memory only: a bot restart mid-match loses it and players run `/jungle sync` again.
 - The bot posts no jungle text on its own; over-the-match and nobody-heard events go to the log, and `/jungle status` and `/jungle test` say them on request.
@@ -45,3 +45,5 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 
 - The release workflow ends in one job that tags `v<version>` and creates the GitHub Release; app packs set `KZG_UPDATE_FEED` to the repo address so Velopack reads updates from release assets. Per-job artifacts hold only release files, so the last job can attach everything.
 - Mac installer and portable files are named `macOS-arm64` for players; the Velopack channel, RID, `.nupkg`, `RELEASES-*` and `*.json` keep `osx-arm64`, because installed apps update from that channel. `pack-app.sh` does the rename.
+- The app's display name is "Discord Broadcast", but the Velopack pack id `KZGBroadcast` and the Mac bundle id `app.kzg.broadcast` are kept, so installed apps keep updating and macOS keeps the Input Monitoring grant; only the installer file names, the Mac `.app` name (vpk's `--packTitle`) and the Windows startup entry changed.
+- The default Bot address is set at build time through the `KzgDefaultHost` MSBuild property; a saved setting wins over it and the field stays editable.

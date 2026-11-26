@@ -54,7 +54,7 @@ public static class SetupPages
             .Append("<p>You can start with fewer and add more later: leave the fields of channels you don't use empty. If you later pick a channel in <code>/gvg setup</code> whose bot you left out, a bot whose channel you didn't pick fills in and takes that channel's name.</p>")
             .Append("<details open><summary>How to make a bot account</summary><ol>")
             .Append("<li>Open the <a href=\"https://discord.com/developers/applications\" target=\"_blank\" rel=\"noopener noreferrer\">Discord Developer Portal</a> and sign in.</li>")
-            .Append("<li>Choose <b>New Application</b>, name it <i>KZG Broadcaster</i>, and accept the terms.</li>")
+            .Append("<li>Choose <b>New Application</b>, name it <i>Broadcast Relay</i>, and accept the terms.</li>")
             .Append("<li>Open the <b>Installation</b> tab, set <b>Install Link</b> to <b>None</b>, and save.</li>")
             .Append("<li>Open the <b>Bot</b> tab, turn <b>Public Bot</b> off, choose <b>Reset Token</b>, and copy the token.</li>")
             .Append("<li>Paste it below, and do the same for each bot.</li>")

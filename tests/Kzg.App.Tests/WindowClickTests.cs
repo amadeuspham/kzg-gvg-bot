@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
@@ -183,12 +184,15 @@ public sealed class WindowClickTests : IDisposable
                 var size = window.ClientSize;
                 Assert.False(IsServerFieldShown(window));
 
-                Click(window, ButtonWith(window, "Change server"));
+                Click(window, ButtonWith(window, "Change bot address"));
 
                 Assert.True(IsServerFieldShown(window));
                 Assert.Equal(size, window.ClientSize);
+                Assert.Contains(window.GetVisualDescendants().OfType<TextBox>(), box => box.PlaceholderText == "bot.example.org" && AutomationProperties.GetName(box) == "Bot address");
+                Assert.Contains(window.GetVisualDescendants().OfType<TextBlock>(), block => block.Text == "Bot address" && block.IsEffectivelyVisible);
+                Assert.Equal("Discord Broadcast", window.Title);
 
-                Click(window, ButtonWith(window, "Change server"));
+                Click(window, ButtonWith(window, "Change bot address"));
 
                 Assert.False(IsServerFieldShown(window));
                 Assert.Equal(size, window.ClientSize);
@@ -290,5 +294,5 @@ public sealed class WindowClickTests : IDisposable
     }
 
     private static bool IsServerFieldShown(Window window) =>
-        window.GetVisualDescendants().OfType<TextBox>().Any(box => box.PlaceholderText == "gvg.example.com" && box.IsEffectivelyVisible);
+        window.GetVisualDescendants().OfType<TextBox>().Any(box => box.PlaceholderText == "bot.example.org" && box.IsEffectivelyVisible);
 }

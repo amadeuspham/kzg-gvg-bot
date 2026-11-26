@@ -1,16 +1,17 @@
 # kzg-gvg-bot
 
-A Discord relay for Where Winds Meet guild wars. A bot in each small voice channel copies a broadcasting player's audio into the other channels of their big team. A PC app, KZG Broadcast, triggers it: hold a key and your voice goes to the whole big team, or to every team. Phone players have no app; they hear broadcasts and talk in their own team channel.
+A Discord relay for team voice events, built for Where Winds Meet. A bot in each small voice channel copies a broadcasting player's audio into the other channels of their big team. A PC app, Discord Broadcast, triggers it: hold a key and your voice goes to the whole big team, or to every team. Phone players have no app; they hear broadcasts and talk in their own team channel.
 
 ## Download
 
-Get KZG Broadcast from the [latest release](https://github.com/amadeuspham/kzg-gvg-bot/releases/latest): [`KZGBroadcast-win-x64-Setup.exe`](https://github.com/amadeuspham/kzg-gvg-bot/releases/latest/download/KZGBroadcast-win-x64-Setup.exe) for Windows, [`KZGBroadcast-macOS-arm64-Setup.pkg`](https://github.com/amadeuspham/kzg-gvg-bot/releases/latest/download/KZGBroadcast-macOS-arm64-Setup.pkg) for Apple Silicon Macs, or a Portable zip. Ignore the `.nupkg` and `.json` files; they are update-feed files for the app. The installers are unsigned, so follow [docs/guides/unsigned-install.md](docs/guides/unsigned-install.md) past the first warning. The bot has no download; whoever hosts it deploys it (see [docs/guides/host.md](docs/guides/host.md)).
+Get Discord Broadcast from the [latest release](https://github.com/amadeuspham/kzg-gvg-bot/releases/latest): [`DiscordBroadcast-win-x64-Setup.exe`](https://github.com/amadeuspham/kzg-gvg-bot/releases/latest/download/DiscordBroadcast-win-x64-Setup.exe) for Windows, [`DiscordBroadcast-macOS-arm64-Setup.pkg`](https://github.com/amadeuspham/kzg-gvg-bot/releases/latest/download/DiscordBroadcast-macOS-arm64-Setup.pkg) for Apple Silicon Macs, or a Portable zip. Ignore the `.nupkg` and `.json` files; they are update-feed files for the app. The installers are unsigned, so follow [docs/guides/unsigned-install.md](docs/guides/unsigned-install.md) past the first warning. The bot has no download; whoever hosts it deploys it (see [docs/guides/host.md](docs/guides/host.md)).
 
 ## Run it
 
-- Players: install KZG Broadcast by following [docs/guides/unsigned-install.md](docs/guides/unsigned-install.md). The installers are unsigned, so Windows and macOS warn first. Link KZG Broadcast once with Sign in with Discord, or `/connect` in Discord and paste the code.
+- Players: install Discord Broadcast by following [docs/guides/unsigned-install.md](docs/guides/unsigned-install.md). The installers are unsigned, so Windows and macOS warn first. Link Discord Broadcast once with Sign in with Discord, or `/connect` in Discord and paste the code.
   - Every player has three controls on the main window: hold F8 to talk to your whole team, hold F7 to talk to all teams (Attack and Defense), and press F9 (or click the switch) for open mic, which keeps your own team hearing you until you turn it off. Open mic works only while you sit in a team voice channel.
   - Click a key chip to change its key; while it waits, Clear leaves that control unset ("Not set") so no key fires it, and Cancel keeps the key. One key can't do two controls. Esc can be a key, so it doesn't cancel.
+  - The sign-in screen asks for the Bot address (the host name of the bot you join, such as `bot.example.org`). It comes filled in with the address built into the app; change it to join another bot. The default is set when the app is built (`-p:KzgDefaultHost=<host>`); an address a player saved wins over it.
   - Settings has an "Open at login" switch, off by default.
   - Updates install automatically once an update feed is set; the app shows "Restart to update" when ready.
   - On a Mac, the app restarts by itself once Input Monitoring is granted.
@@ -29,7 +30,7 @@ Get KZG Broadcast from the [latest release](https://github.com/amadeuspham/kzg-g
 - `src/Kzg.Core`: pure logic (routing, buffers, config, pairing). No Discord, UI or native dependencies.
 - `src/Kzg.Audio`, `src/Kzg.Discord`: audio codec, Discord adapter.
 - `src/Kzg.Bot`: host executable.
-- `src/Kzg.App`, `src/Kzg.App.Input`: the KZG Broadcast PC app and its input sources.
+- `src/Kzg.App`, `src/Kzg.App.Input`: the Discord Broadcast PC app and its input sources.
 - `tests/Kzg.<Project>.Tests`: one test project per project it covers.
 - `packaging/`: scripts that build the release files. Output goes to `packaging/out/`, which is git-ignored.
 - `docs/`: [contracts.md](docs/contracts.md) and the guides in `docs/guides/`.
@@ -47,7 +48,7 @@ The version is `<Version>` in `Directory.Build.props`. The release workflow (`.g
 - `packaging/publish-bot.sh --rid win-x64|linux-x64|linux-arm64|osx-arm64`: the bot as a self-contained folder and a `.zip` or `.tar.gz`, with libdave 1.2.1.9. The macOS one holds `install-mac.command`, which installs a launchd service for the user; Intel Macs aren't supported. Releases carry no bot archive; build it with this script.
 - `docker build -f packaging/docker/Dockerfile -t kzg-bot .`: the bot on Ubuntu 24.04, for Linux hosts whose glibc is older than 2.38.
 - `packaging/docker/compose.yaml`: the bot plus Caddy for automatic HTTPS. Put the domain in `packaging/docker/kzg.env`, then `docker compose up -d` in that folder.
-- `packaging/pack-app.sh --rid win-x64|osx-arm64|osx-x64`: the app as an unsigned Velopack installer, portable zip and update feed. The macOS packages build on a Mac only. vpk refuses to pack the Windows app until `Program.Main` calls `VelopackApp.Build().Run()`; `--allow-missing-velopack-hook` skips that check for trial builds.
+- `packaging/pack-app.sh --rid win-x64|osx-arm64|osx-x64`: the app as an unsigned Velopack installer, portable zip and update feed. The macOS packages build on a Mac only. The installer files are named `DiscordBroadcast-<platform>-Setup.*` and `-Portable.zip`; the update-feed files keep the `KZGBroadcast` id. The app icons are rendered from `src/Kzg.App/Assets/icon.svg` by `src/Kzg.App/Assets/render-icons.sh` (macOS only). vpk refuses to pack the Windows app until `Program.Main` calls `VelopackApp.Build().Run()`; `--allow-missing-velopack-hook` skips that check for trial builds.
 
 ## Local data
 

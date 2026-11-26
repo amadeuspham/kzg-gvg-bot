@@ -54,7 +54,7 @@ public sealed class MacLaunchAgent(string folder, string exe) : IStartAtLogin
 
     public bool IsEnabled => File.Exists(PlistPath);
 
-    /// <summary>True for <c>/Applications/KZG Broadcast.app/Contents/MacOS/Kzg.App</c>, not for a binary in a build folder.</summary>
+    /// <summary>True for <c>/Applications/Discord Broadcast.app/Contents/MacOS/Kzg.App</c>, not for a binary in a build folder.</summary>
     public static bool IsInsideBundle(string exe) => exe.Contains(".app/Contents/MacOS/", StringComparison.Ordinal);
 
     public void Set(bool enabled)
@@ -103,11 +103,14 @@ public interface IRunValues
 /// <summary>Windows: a value in the current user's <c>Run</c> key, which Windows starts at sign-in without asking for administrator rights.</summary>
 public sealed class WindowsRunKey(IRunValues values, string exe) : IStartAtLogin
 {
-    public const string ValueName = "KZG Broadcast";
+    public const string ValueName = "Discord Broadcast";
+
+    /// <summary>The value an earlier version wrote under the old app name; removed on any change so no stale startup entry is left.</summary>
+    public const string LegacyValueName = "KZG Broadcast";
 
     public bool IsAvailable => true;
 
-    public bool IsEnabled => values.Get(ValueName) is { Length: > 0 };
+    public bool IsEnabled => values.Get(ValueName) is { Length: > 0 } || values.Get(LegacyValueName) is { Length: > 0 };
 
     /// <summary>Velopack runs the app from <c>%LOCALAPPDATA%\KZGBroadcast\current</c>; any other folder is a build or a portable copy.</summary>
     public static bool IsInstalledCopy(string exe) =>
@@ -115,6 +118,7 @@ public sealed class WindowsRunKey(IRunValues values, string exe) : IStartAtLogin
 
     public void Set(bool enabled)
     {
+        values.Remove(LegacyValueName);
         if (enabled)
         {
             values.Set(ValueName, $"\"{exe}\" --minimized");

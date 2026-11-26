@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "guildId": null,
   "adminRoleId": null,
-  "publicHost": "kzg.example.com",
+  "publicHost": "bot.example.org",
   "alertsChannelId": null,
   "listen": "127.0.0.1:7878",
   "oauth": {
