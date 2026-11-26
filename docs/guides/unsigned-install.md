@@ -18,8 +18,8 @@ To remove it: Settings, Apps, Installed apps, KZG Broadcast, Uninstall.
 
 ## macOS
 
-1. Get the file for your Mac from the person who runs your server: `KZGBroadcast-osx-arm64-Setup.pkg` for an Apple chip (M1 or newer), or `KZGBroadcast-osx-x64-Setup.pkg` for an Intel Mac. Apple menu, About This Mac shows which you have.
-2. (Recommended) Check the file. In Terminal: `shasum -a 256 ~/Downloads/KZGBroadcast-osx-arm64-Setup.pkg`. Compare it with the sum you were given; if they differ, delete the file and ask again.
+1. Get the file for your Mac from the person who runs your server: `KZGBroadcast-macOS-arm64-Setup.pkg` for an Apple chip (M1 or newer), or `KZGBroadcast-macOS-x64-Setup.pkg` for an Intel Mac. Apple menu, About This Mac shows which you have.
+2. (Recommended) Check the file. In Terminal: `shasum -a 256 ~/Downloads/KZGBroadcast-macOS-arm64-Setup.pkg`. Compare it with the sum you were given; if they differ, delete the file and ask again.
 3. Double-click the file. macOS says it can't verify it. Choose Done, not Move to Bin.
 4. Open System Settings, Privacy & Security, scroll to Security, and choose Open Anyway next to the blocked `.pkg`. Enter your password or use Touch ID, choose Open Anyway again, and follow the installer.
 5. Open the app from Applications. When it asks, choose the yellow Open Input Monitoring settings button and switch KZG Broadcast on. The app restarts itself.

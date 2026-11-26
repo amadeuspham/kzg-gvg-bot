@@ -44,3 +44,4 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 ## Release
 
 - The release workflow ends in one job that tags `v<version>` and creates the GitHub Release; app packs set `KZG_UPDATE_FEED` to the repo address so Velopack reads updates from release assets. Per-job artifacts hold only release files, so the last job can attach everything.
+- Mac installer and portable files are named `macOS-arm64` for players; the Velopack channel, RID, `.nupkg`, `RELEASES-*` and `*.json` keep `osx-arm64`, because installed apps update from that channel. `pack-app.sh` does the rename.

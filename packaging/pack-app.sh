@@ -100,5 +100,16 @@ echo "== pack"
     --packId "$PACK_ID" --packTitle "$PACK_TITLE" --packAuthors "$PACK_TITLE" --icon "$icon" --packVersion "$version" \
     --packDir "$publish" --mainExe "$mainExe" --runtime "$rid" --channel "$rid" \
     --outputDir "$feed" ${check[@]+"${check[@]}"} ${sign[@]+"${sign[@]}"}
+# Players see the installer names, so the Mac ones say macOS. Only the two user-facing files are renamed:
+# the channel, the RID, the .nupkg, RELEASES-* and *.json names stay osx-*, because installed apps update
+# from the osx-arm64 channel. The assets json lists the installers, so it is kept in step.
+if [ "$os" = '[osx]' ]; then
+    for kind in Setup.pkg Portable.zip; do
+        old="$PACK_ID-$rid-$kind"; new="$PACK_ID-macOS-${rid#osx-}-$kind"
+        [ -f "$feed/$old" ] || { echo "pack-app: vpk did not write $old" >&2; exit 1; }
+        mv "$feed/$old" "$feed/$new"
+        sed -i.bak "s/$old/$new/g" "$feed/assets.$rid.json" && rm -f "$feed/assets.$rid.json.bak"
+    done
+fi
 echo "output: $feed"
 ls -1 "$feed"

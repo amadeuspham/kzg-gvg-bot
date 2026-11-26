@@ -112,7 +112,10 @@ jobs:
         run: |
           mkdir dist
           # Artifacts keep their folder layout; release assets are flat, so a repeated name is an error.
+          # RELEASES-* and assets.*.json are not shipped: the app's GithubSource reads only releases.<channel>.json
+          # (Velopack CoreUtil.GetVeloReleaseIndexName) and the .nupkg files that file lists.
           while IFS= read -r f; do
+            case "$(basename "$f")" in RELEASES-* | assets.*.json) continue ;; esac
             [ ! -e "dist/$(basename "$f")" ] || { echo "duplicate release file: $(basename "$f")" >&2; exit 1; }
             cp "$f" dist/
           done < <(find artifacts -type f | sort)
@@ -124,5 +127,26 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version }}
         run: |
+          # A hand-written Download table on top; --generate-notes appends the changelog below it.
+          cat > release-notes.md <<'NOTES'
+          ## Download
+
+          | Platform | File |
+          | --- | --- |
+          | Windows | [`KZGBroadcast-win-x64-Setup.exe`](BASE/KZGBroadcast-win-x64-Setup.exe) |
+          | macOS (Apple Silicon) | [`KZGBroadcast-macOS-arm64-Setup.pkg`](BASE/KZGBroadcast-macOS-arm64-Setup.pkg) |
+          | Portable (Windows) | [`KZGBroadcast-win-x64-Portable.zip`](BASE/KZGBroadcast-win-x64-Portable.zip) |
+          | Portable (macOS) | [`KZGBroadcast-macOS-arm64-Portable.zip`](BASE/KZGBroadcast-macOS-arm64-Portable.zip) |
+
+          The installers are unsigned, so Windows and macOS warn first; see the unsigned-install guide in the repository (`docs/guides/unsigned-install.md`).
+
+          Files ending in `.nupkg` or `.json` are update-feed files that the app downloads by itself. You don't need them. `SHA256SUMS` lists checksums for every file. The bot is not part of releases.
+
+          ## Changes
+
+          NOTES
+          # The heredoc is quoted, so the download address is filled in here.
+          sed -i "s|BASE|https://github.com/${GITHUB_REPOSITORY}/releases/download/v${VERSION}|g" release-notes.md
           gh release create "v${VERSION}" dist/* \
-            --target "$GITHUB_SHA" --title "v${VERSION}" --generate-notes
+            --target "$GITHUB_SHA" --title "v${VERSION}" \
+            --notes-file release-notes.md --generate-notes
