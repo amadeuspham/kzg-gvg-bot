@@ -356,8 +356,8 @@
               <TextBlock Text="Updates" />
               <TextBlock Classes="hint" Text="{Binding UpdateStatusText}" />
             </StackPanel>
-            <Button Grid.Column="1" Classes="outline" Content="Check now" Command="{Binding CheckForUpdatesCommand}"
-                    IsEnabled="{Binding CanCheckForUpdates}" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes.outline="{Binding !UpdateIsReady}" Classes.pill="{Binding UpdateIsReady}" Content="{Binding UpdateActionText}"
+                    Command="{Binding UpdateActionCommand}" IsEnabled="{Binding CanRunUpdateAction}" VerticalAlignment="Center" />
           </Grid>
 
           <Button Classes="quiet" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"

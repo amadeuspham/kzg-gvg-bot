@@ -40,7 +40,7 @@ Open the app and choose Sign in with Discord. If that doesn't work, type `/conne
 Optional, in the app's Settings:
 
 - **Open at login** starts the app when you sign in. It is off by default.
-- **Updates** are automatic. The app checks in the background; when "Version x is ready" shows, press Restart to update between calls. Check now looks straight away.
+- **Updates** are automatic. The app checks in the background; when "Version x is ready" shows, press Restart to Update between calls. The same button reads Check for Updates… when nothing is waiting and looks straight away. It sits in Settings, in the tray menu and, on a Mac, in the app menu (Discord Broadcast > Check for Updates…).
 
 ## If something goes wrong
 

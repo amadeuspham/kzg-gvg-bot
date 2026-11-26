@@ -13,7 +13,7 @@ Get Discord Broadcast from the [download page](https://amadeuspham.github.io/kzg
   - Click a key chip to change its key; while it waits, Clear leaves that control unset ("Not set") so no key fires it, and Cancel keeps the key. One key can't do two controls. Esc can be a key, so it doesn't cancel.
   - The sign-in screen asks for the Bot address (the host name of the bot you join, such as `bot.example.org`). It comes filled in with the address built into the app; change it to join another bot. The default is set when the app is built (`-p:KzgDefaultHost=<host>`); an address a player saved wins over it.
   - Settings has an "Open at login" switch, off by default.
-  - Updates install automatically once an update feed is set; the app shows "Restart to update" when ready.
+  - Updates install automatically once an update feed is set; the app shows "Restart to update" when ready. One update action sits in Settings, in the tray menu (Windows and Mac) and in the Mac app menu ("Check for Updates…", which becomes "Restart to Update" when one is ready).
   - On a Mac, the app restarts by itself once Input Monitoring is granted.
 - Input: macOS needs the Input Monitoring permission only (no Accessibility). Windows reads keys with Raw Input, with a low-level hook as fallback.
 - Whoever hosts the bot: [docs/guides/host.md](docs/guides/host.md). No file needs editing by hand:

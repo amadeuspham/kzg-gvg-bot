@@ -1704,15 +1704,67 @@ public sealed class MainViewModelTests : IDisposable
         Build(Linked());
 
         Assert.True(_vm.ShowUpdates);
-        Assert.Equal("You have the newest version", _vm.UpdateStatusText);
-        Assert.True(_vm.CanCheckForUpdates);
+        Assert.Equal($"You have the newest version (v{AppInfo.Version})", _vm.UpdateStatusText);
+        Assert.True(_vm.CanRunUpdateAction);
 
-        _vm.CheckForUpdatesCommand.Execute(null);
+        _vm.UpdateActionCommand.Execute(null);
         Assert.Equal(1, _updater.Checks);
 
         _updater.Stage = UpdateStage.Failed;
         Assert.Equal("Couldn't check for updates", _vm.UpdateStatusText);
         _updater.Stage = UpdateStage.Checking;
-        Assert.False(_vm.CanCheckForUpdates);
+        Assert.False(_vm.CanRunUpdateAction);
+    }
+
+    [Fact]
+    public void The_update_action_checks_when_idle_or_failed_and_is_off_while_checking()
+    {
+        _updater = new FakeUpdater();
+        Build(Linked());
+
+        Assert.Equal("Check for Updates…", _vm.UpdateActionText);
+        Assert.True(_vm.CanRunUpdateAction);
+        Assert.Contains(AppInfo.Version, _vm.UpdateStatusText, StringComparison.Ordinal);
+        _vm.UpdateActionCommand.Execute(null);
+        Assert.Equal(1, _updater.Checks);
+        Assert.Equal(0, _updater.Restarts);
+
+        _updater.Stage = UpdateStage.Failed;
+        Assert.Equal("Check for Updates…", _vm.UpdateActionText);
+        Assert.True(_vm.CanRunUpdateAction);
+
+        _updater.Stage = UpdateStage.Checking;
+        Assert.Equal("Checking for Updates…", _vm.UpdateActionText);
+        Assert.False(_vm.CanRunUpdateAction);
+        _vm.UpdateActionCommand.Execute(null);
+        Assert.Equal(1, _updater.Checks);
+    }
+
+    [Fact]
+    public void When_an_update_is_ready_the_update_action_restarts_from_settings()
+    {
+        _updater = new FakeUpdater { Stage = UpdateStage.Ready, ReadyVersion = "0.2.0" };
+        Build(Linked());
+
+        Assert.Equal("Restart to Update", _vm.UpdateActionText);
+        Assert.True(_vm.UpdateIsReady);
+        Assert.Contains("0.2.0", _vm.UpdateStatusText, StringComparison.Ordinal);
+        Assert.True(_vm.CanRunUpdateAction);
+
+        _vm.UpdateActionCommand.Execute(null);
+        Assert.Equal(1, _updater.Restarts);
+        Assert.Equal(0, _updater.Checks);
+    }
+
+    [Fact]
+    public void The_update_action_will_not_restart_while_the_player_is_broadcasting()
+    {
+        _updater = new FakeUpdater { Stage = UpdateStage.Ready, ReadyVersion = "0.2.0" };
+        StartLinkedOnline();
+        _input.Raise(F8, true);
+
+        Assert.False(_vm.CanRunUpdateAction);
+        _vm.UpdateActionCommand.Execute(null);
+        Assert.Equal(0, _updater.Restarts);
     }
 }

@@ -3,6 +3,11 @@
              x:Class="Kzg.App.App"
              Name="Discord Broadcast"
              RequestedThemeVariant="Default">
+  <!-- Declared here, not in code: Avalonia's macOS exporter puts "About Avalonia" in the app menu when none exists by the
+       time it first runs, which is before OnFrameworkInitializationCompleted. App.CreateMacAppMenu fills this one. -->
+  <NativeMenu.Menu>
+    <NativeMenu />
+  </NativeMenu.Menu>
   <Application.Resources>
     <ResourceDictionary>
       <FontFamily x:Key="IconFont">avares://Kzg.App/Assets/Fonts#tabler-icons</FontFamily>
