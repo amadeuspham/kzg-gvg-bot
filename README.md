@@ -40,7 +40,7 @@ Three opt-in groups of tests are skipped by the gate: `KZG_LIVE=1` runs checks a
 
 The version is `<Version>` in `Directory.Build.props`. Nothing here signs, uploads or releases.
 
-- `packaging/publish-bot.sh --rid win-x64|linux-x64|linux-arm64|osx-arm64`: the bot as a self-contained folder and a `.zip` or `.tar.gz`, with libdave 1.2.1.9. The macOS one holds `install-mac.command`, which installs a launchd service for the user; Intel Macs aren't supported.
+- `packaging/publish-bot.sh --rid win-x64|linux-x64|linux-arm64|osx-arm64`: the bot as a self-contained folder and a `.zip` or `.tar.gz`, with libdave 1.2.1.9. The macOS one holds `install-mac.command`, which installs a launchd service for the user; Intel Macs aren't supported. Releases carry no bot archive; build it with this script.
 - `docker build -f packaging/docker/Dockerfile -t kzg-bot .`: the bot on Ubuntu 24.04, for Linux hosts whose glibc is older than 2.38.
 - `packaging/docker/compose.yaml`: the bot plus Caddy for automatic HTTPS. Put the domain in `packaging/docker/kzg.env`, then `docker compose up -d` in that folder.
 - `packaging/pack-app.sh --rid win-x64|osx-arm64|osx-x64`: the app as an unsigned Velopack installer, portable zip and update feed. The macOS packages build on a Mac only. vpk refuses to pack the Windows app until `Program.Main` calls `VelopackApp.Build().Run()`; `--allow-missing-velopack-hook` skips that check for trial builds.

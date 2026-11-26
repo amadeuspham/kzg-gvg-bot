@@ -1,9 +1,14 @@
 using System.Net;
 using System.Net.WebSockets;
 using Kzg.Bot.Control;
+using Kzg.Bot.Discord;
 using Kzg.Bot.Fake;
+using Kzg.Bot.Logging;
 using Kzg.Core.Abstractions;
 using Kzg.Core.Config;
+using Kzg.Core.Pairing;
+using Kzg.Discord;
+using Kzg.Discord.Commands;
 using Kzg.Protocol;
 
 namespace Kzg.Bot.Tests.Hosting;
@@ -334,5 +339,48 @@ public sealed class HostTests : IAsyncDisposable
         {
             Assert.DoesNotContain(secret, log);
         }
+    }
+
+    private static Secrets TokensFor(BotConfig config) => Secrets.Combine(
+        config.Bots.Select(b => b.TokenRef).Append("oauthClientSecret").ToDictionary(name => name, _ => HostRig.BotToken), new Dictionary<string, string>());
+
+    private static (GvgHost Host, FakeDiscordRuntime Discord, string File, Secrets Tokens) Controlled(HostRig rig)
+    {
+        var tokens = TokensFor(rig.Bot.Config);
+        var discord = new FakeDiscordRuntime(rig.Time);
+        var file = Path.Combine(rig.Folder, "config.json");
+        return (new GvgHost(rig.Bot, new ConfigStore(file), tokens, discord, new Redactor([HostRig.BotToken])), discord, file, tokens);
+    }
+
+    [Fact]
+    public async Task A_stop_is_saved_and_a_host_started_on_that_file_stays_stopped()
+    {
+        var rig = await RigAsync();
+        var (host, discord, file, tokens) = Controlled(rig);
+
+        await host.SetRunningAsync(false, default);
+
+        Assert.False(discord.Running);
+        Assert.True(rig.Bot.Config.Stopped);
+        var saved = Assert.IsType<FileLoad<BotConfig>.Loaded>(new ConfigStore(file).Load(tokens)).Value;
+        Assert.True(saved.Stopped);
+
+        await host.SetRunningAsync(true, default);
+        var started = Assert.IsType<FileLoad<BotConfig>.Loaded>(new ConfigStore(file).Load(tokens)).Value;
+        Assert.False(started.Stopped);
+        Assert.True(discord.Running);
+    }
+
+    [Fact]
+    public async Task A_stop_that_cannot_be_written_changes_nothing()
+    {
+        var rig = await RigAsync();
+        var (host, discord, file, tokens) = Controlled(rig);
+        Directory.CreateDirectory(file);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => host.SetRunningAsync(false, default));
+
+        Assert.True(discord.Running);
+        Assert.False(rig.Bot.Config.Stopped);
     }
 }

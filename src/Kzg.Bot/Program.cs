@@ -212,7 +212,7 @@ public static class Program
                 var host = new GvgHost(bot, store, secrets, discord, Redactor.For(secrets));
                 await bot.StartAsync(stop).ConfigureAwait(false);
                 await discord.StartAsync(bot.Loggers, stop).ConfigureAwait(false);
-                await discord.ApplyAsync(bot.Config, running: true, stop).ConfigureAwait(false);
+                await discord.ApplyAsync(bot.Config, running: !bot.Config.Stopped, stop).ConfigureAwait(false);
                 discord.AttachControl(host);
                 await host.GoLiveAsync(stop).ConfigureAwait(false);
                 var marker = new RunMarker(paths.Folder);

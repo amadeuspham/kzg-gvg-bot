@@ -43,7 +43,7 @@ The repo has no remote yet. When it exists:
 2. CI (`.github/workflows/ci.yml`) runs the gate on macOS, Windows and Ubuntu 24.04 for every PR and push to `main`. It uses no secrets.
 3. Turn on branch protection requiring the three gate jobs.
 4. Auto-update works once a release exists: the release workflow packs the app with `KZG_UPDATE_FEED` set to the repo address, and the app reads the Velopack files from the repo's releases.
-5. The release workflow is manual and does nothing until the secret `KZG_MAC_CERT_P12` exists (also `KZG_MAC_CERT_PASSWORD`, `KZG_MAC_SIGN_IDENTITY`). Review `packaging/pack-app.sh`'s signing variable name against the workflow before the first release. When the Mac, Windows and bot jobs pass, a last job tags `v<version>` at the run's commit and creates the GitHub Release with the bot archives (linux-x64, win-x64, osx-arm64), every file in `velopack-<rid>/`, and `SHA256SUMS`. The version input must equal `<Version>` in `Directory.Build.props`.
+5. The release workflow is manual and does nothing until the secret `KZG_MAC_CERT_P12` exists (also `KZG_MAC_CERT_PASSWORD`, `KZG_MAC_SIGN_IDENTITY`). Review `packaging/pack-app.sh`'s signing variable name against the workflow before the first release. When the Mac and Windows jobs pass, a last job tags `v<version>` at the run's commit and creates the GitHub Release with every file in `velopack-<rid>/` and `SHA256SUMS`. The bot is not released; hosts build it from source (see [host.md](host.md)). The version input must equal `<Version>` in `Directory.Build.props`.
 
 ## Infrastructure (OCI)
 
@@ -93,7 +93,7 @@ Commit or stash on a branch, push it, then pull on the other machine and read [A
 
 ## Bot packages and memory
 
-- Build the bot archives with `packaging/publish-bot.sh --rid win-x64`, `--rid linux-x64` or `--rid osx-arm64`. Each holds the bot, the .NET runtime and libdave.
+- Build the bot archives with `packaging/publish-bot.sh --rid win-x64`, `--rid linux-x64` or `--rid osx-arm64`. Each holds the bot, the .NET runtime and libdave. Releases don't carry them; this is how a host builds its own.
 - libdave 1.2.1.9 (Discord voice encryption) is bundled in the archives and the Docker image. It keeps its own license; read upstream's before redistributing a package.
 - Memory test, one hour with 30 talkers and 6 broadcasting: the process went from about 135 MB to 143 MB, managed heap flat at 15.7 MB, CPU about 1% of a 14-core Mac. The small remaining growth is outside the managed heap; cause not found. The 512 MB cap in the host guide (Reference, "Memory cap and daily restart") is about three times what a full war needs.
 - Log rotation: at 10 MB a log moves to `bot.1.log`, two old files kept (30 MB total). Docker keeps three 10 MB log files per container.

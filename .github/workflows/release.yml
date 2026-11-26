@@ -97,31 +97,8 @@ jobs:
           name: app-win-x64
           path: packaging/out/velopack-win-x64/**
 
-  bot:
-    needs: guard
-    if: needs.guard.outputs.ready == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-dotnet@v6
-        with:
-          global-json-file: global.json
-      - name: Pack bot
-        run: |
-          packaging/publish-bot.sh --rid linux-x64
-          packaging/publish-bot.sh --rid win-x64
-          packaging/publish-bot.sh --rid osx-arm64
-      - uses: actions/upload-artifact@v7
-        with:
-          name: bot
-          # Archives only; the unpacked publish folders beside them are not release files.
-          path: |
-            packaging/out/kzg-bot-*.tar.gz
-            packaging/out/kzg-bot-*.zip
-
   release:
-    needs: [app-macos, app-windows, bot]
+    needs: [app-macos, app-windows]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:

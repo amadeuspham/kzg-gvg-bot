@@ -50,6 +50,19 @@ public sealed class ConfigStoreTests : IDisposable
     }
 
     [Fact]
+    public void Stopped_defaults_to_running_in_an_older_file_and_round_trips_when_set()
+    {
+        Assert.False(Valid().Stopped);
+        Assert.IsType<FileSave.Saved>(_store.Save(Valid() with { Stopped = true }, Tokens));
+        Assert.Contains("\"stopped\": true", File.ReadAllText(_store.FilePath), StringComparison.Ordinal);
+        Assert.True(Assert.IsType<FileLoad<BotConfig>.Loaded>(_store.Load(Tokens)).Value.Stopped);
+
+        var older = File.ReadAllText(_store.FilePath).Replace("\"stopped\": true,", "", StringComparison.Ordinal);
+        Assert.DoesNotContain("stopped", older, StringComparison.Ordinal);
+        Assert.False(Assert.IsType<FileLoad<BotConfig>.Loaded>(ConfigStore.Parse(older, Tokens)).Value.Stopped);
+    }
+
+    [Fact]
     public void The_file_spells_ids_as_strings_and_unset_ones_as_null()
     {
         var text = ConfigStore.Serialize(Valid() with { AdminRoleId = null });

@@ -19,6 +19,8 @@ This guide gets the Kzg bot running on your own computer or server. Pick ONE way
 
 Not sure? Use A. It works on any Linux server.
 
+Releases carry no bot archive. Parts B, C and D build the bot from source: clone the repo, install the .NET 10 SDK (see [dev-setup.md](dev-setup.md)), and run `packaging/publish-bot.sh --rid <rid>` from the repo root. The archive lands in `packaging/out/`.
+
 ## A. Docker (easiest)
 
 You need Docker with Compose, and the project folder on the server.
@@ -39,7 +41,7 @@ You need Docker with Compose, and the project folder on the server.
 
 Apple Silicon only (M1 or newer).
 
-1. Unpack `kzg-bot-<version>-osx-arm64.tar.gz` and move the folder somewhere it can stay, such as your home folder. Don't move it later.
+1. Build it: `packaging/publish-bot.sh --rid osx-arm64`. Then unpack `packaging/out/kzg-bot-<version>-osx-arm64.tar.gz` and move the folder somewhere it can stay, such as your home folder. Don't move it later.
 2. Double-click `install-mac.command`. If macOS won't open it, Control-click it, choose Open, then Open again.
 3. Your browser opens the setup page by itself. If it doesn't, find the link in `~/Library/Logs/Kzg/bot.log` (open it with Console).
 4. Point your domain's DNS at your home address. Forward ports 80 and 443 from your router to this Mac.
@@ -59,7 +61,7 @@ The bot now starts at login, restarts after a crash, and keeps the Mac awake. Le
 
 ## C. Windows
 
-1. Unzip `kzg-bot-<version>-win-x64.zip`, for example into `C:\Kzg\bot`.
+1. Build it in Git Bash from the repo root: `packaging/publish-bot.sh --rid win-x64`. Then unzip `packaging/out/kzg-bot-<version>-win-x64.zip`, for example into `C:\Kzg\bot`.
 2. Open PowerShell as administrator, go to that folder and run:
 
    ```powershell
@@ -94,7 +96,7 @@ The bot now starts with the PC and restarts after a crash.
 
 ## D. Linux
 
-1. Unpack the bot and install the service:
+1. Build the bot on a machine with the .NET 10 SDK, as above: `packaging/publish-bot.sh --rid linux-x64`. Copy `packaging/out/kzg-bot-<version>-linux-x64.tar.gz` to the server, then unpack it and install the service:
 
    ```bash
    sudo useradd --system --home /var/lib/kzg --create-home --shell /usr/sbin/nologin kzg
@@ -150,7 +152,7 @@ Each player installs KZG Broadcast (see the [unsigned-install guide](unsigned-in
 - **Linux says `GLIBC_2.38` or `GLIBCXX_3.4.32` not found.** Your system is too old (Debian 12, Ubuntu 22.04). Use A. Docker.
 - **To change tokens or add bots later.** Start the bot with `--setup` (for example `./start.sh --setup`). Your teams and settings stay.
 - **Stop or remove it.** Mac: `./install-mac.command --remove`. Windows: `.\install-windows-task.ps1 -Remove`. Linux: `sudo systemctl disable --now kzg-bot`. Docker: `docker compose down`. Your data is kept.
-- **Updating.** Stop the bot, unpack the new version over the old folder, and start it again (Docker: `docker compose up -d --build`). Your data is untouched.
+- **Updating.** Stop the bot, unpack the new version over the old folder, and start it again. Build the new version as described in its part above (B, C or D). Docker: `git pull` and `docker compose up -d --build`. Your data is untouched.
 
 <details>
 <summary>Reference</summary>
@@ -210,7 +212,7 @@ Check it: `curl https://kzg.example.com/healthz` prints `ok`.
 
 - `/gvg setup`: up to three Attack channels (`attack-1` to `attack-3`), up to three Defense, and optionally `channel`. It sets the teams to exactly these channels. Rerun it any time.
 - `/gvg alerts channel:#admins` sets the alerts channel; `/gvg alerts` with no channel stops alerts. The bot posts a test message or names the missing permission.
-- `/gvg status` shows bots and channels. There are no shot callers: every player has open mic and both keys, and a `shotCallerUserId` left in an older `config.json` is ignored. `/gvg bind`, `/gvg unbind`, `/gvg bot assign` change one thing. `/gvg stop` takes every bot out of voice until `/gvg start`.
+- `/gvg status` shows bots and channels. There are no shot callers: every player has open mic and both keys, and a `shotCallerUserId` left in an older `config.json` is ignored. `/gvg bind`, `/gvg unbind`, `/gvg bot assign` change one thing. `/gvg stop` takes every bot out of voice until `/gvg start`. The stop is saved in `config.json`, so it survives a restart of the bot or the server.
 - A bot is named after the team channel it is in now: the second Attack channel's bot is "A2 Broadcaster", in every reply, status line, alert and log, and as its server nickname. The name follows the bot when `/gvg bot assign` moves it or `/gvg unbind` shifts the channels after one. A bot with no team channel goes by its `secrets.json` name, such as "relay5 (spare)", which is also how `/gvg bot assign` lists it.
 - `/gvg config set publicHost gvg.yourguild.com` sets the players' address.
 - `/jungle` is open to every member, not only admins. `start` runs the match clock from 35:00; `sync time:MM:SS` sets it to the in-game time (from 35:00 down to 00:00); `pause`, `resume` and `stop` do what they say; `status` shows the clock and the next call; `test` plays a call now. Calls are spoken 40 and 20 seconds before the jungle spawns at 25:00, 20:00 (with halftime), 15:00, 10:00 and 05:00, in every team channel that has a relay bot in it. Replies are private to whoever ran the command. Admins set the loudness with `/gvg config set jungleVolume`; a call already playing finishes at the old level. The clock is kept in memory only, so a bot restart loses it and players run `/jungle sync` again.
