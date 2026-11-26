@@ -40,6 +40,7 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 ## Testing
 
 - Tests that run the engine against the wall clock (`[RealTimeFact]`, `KZG_REALTIME=1`) are opt-in like the live and load tests: their timing ranges fail on a busy CI runner, and the gate runs fake clocks only.
+- The live test classes share one xUnit collection with parallelization off: each starts the bot on the same relay tokens and seats the same test bots, and Discord gives a bot one voice connection per server, so two at once drop each other's audio and leave bots in voice.
 
 ## Release
 

@@ -16,6 +16,7 @@ namespace Kzg.Bot.Tests.Live;
 /// its own channel on its own, and carry on with the broadcast, with no frame heard twice anywhere.
 /// Needs <c>KZG_LIVE=1</c> and a bot with Move Members: the secret <c>mover</c>, else the first of the test bots that has it.
 /// </summary>
+[Collection(LiveCollection.Name)]
 public sealed class LiveMovedRelayTests(ITestOutputHelper output)
 {
     private const int ClipSeconds = 14;

@@ -10,6 +10,7 @@ namespace Kzg.Bot.Tests.Live;
 /// What the setup page and <c>/gvg setup</c> need from the real Discord, without voice: every relay token is
 /// a bot in the test server, and Discord accepts the slash commands with the new options. It posts nothing.
 /// </summary>
+[Collection(LiveCollection.Name)]
 public sealed class LiveSetupTests
 {
     private static (Secrets Secrets, BotConfig Config) Dev()
@@ -52,10 +53,14 @@ public sealed class LiveSetupTests
         var application = await rest.GetCurrentApplicationAsync();
 
         // The same call the bot makes at every start.
-        var registered = await rest.BulkOverwriteGuildApplicationCommandsAsync(application.Id, config.GuildId!.Value, CommandSpec.Build(config));
+        var spec = CommandSpec.Build(config);
+        var registered = await rest.BulkOverwriteGuildApplicationCommandsAsync(application.Id, config.GuildId!.Value, spec);
 
+        // Discord kept every option of /gvg setup that the spec sends: a channel per team seat and the alerts channel.
+        var setupSpec = ((SlashCommandProperties)spec.Single(c => c.Name == CommandSpec.Gvg)).Options!.Single(o => o.Name == "setup");
         var gvg = registered.Single(c => c.Name == CommandSpec.Gvg);
-        Assert.Contains(gvg.Options!, o => o.Name == "setup" && o.Options!.Count == 9);
+        var setup = gvg.Options!.Single(o => o.Name == "setup");
+        Assert.Equal(setupSpec.Options!.Select(o => o.Name).Order(), setup.Options!.Select(o => o.Name).Order());
         Assert.Contains(gvg.Options!, o => o.Name == "alerts");
     }
 }
