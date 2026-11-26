@@ -80,6 +80,7 @@ public partial class App : Application
         _clock.Start();
 
         CreateTray(window);
+        CreateMacAppMenu();
         if (Program.Instance is { } instance)
         {
             instance.ShowRequested += () => Dispatcher.UIThread.Post(() =>
@@ -109,9 +110,52 @@ public partial class App : Application
         };
         var quit = new NativeMenuItem("Quit");
         quit.Click += (_, _) => _viewModel!.QuitCommand.Execute(null);
-        _tray = new TrayIcon { Menu = [show, quit] };
+        var menu = new NativeMenu { show, new NativeMenuItemSeparator() };
+        if (_viewModel!.ShowUpdates)
+        {
+            menu.Add(NewUpdateItem());
+            menu.Add(new NativeMenuItemSeparator());
+        }
+        menu.Add(quit);
+        _tray = new TrayIcon { Menu = menu };
         TrayIcon.SetIcons(this, [_tray]);
         ShowBadge(window);
+    }
+
+    /// <summary>
+    /// The macOS app-name menu. App.axaml declares it empty so Avalonia never adds its default "About Avalonia" entry; this
+    /// names the app and its version instead, and carries the update action Mac players look for there.
+    /// </summary>
+    private void CreateMacAppMenu()
+    {
+        if (!OperatingSystem.IsMacOS() || NativeMenu.GetMenu(this) is not { } menu)
+        {
+            return;
+        }
+        menu.Add(new NativeMenuItem($"{AppInfo.Name} v{AppInfo.Version}") { IsEnabled = false });
+        if (_viewModel!.ShowUpdates)
+        {
+            menu.Add(new NativeMenuItemSeparator());
+            menu.Add(NewUpdateItem());
+        }
+    }
+
+    /// <summary>A menu entry that mirrors the view model's update action. The view model owns the wording and when it is allowed.</summary>
+    private NativeMenuItem NewUpdateItem()
+    {
+        var model = _viewModel!;
+        var item = new NativeMenuItem(model.UpdateActionText) { IsEnabled = model.CanRunUpdateAction };
+        item.Click += (_, _) => model.UpdateActionCommand.Execute(null);
+        // The model raises these from the UI thread already; Post keeps a late or off-thread notification safe too.
+        model.PropertyChanged += (_, e) => Dispatcher.UIThread.Post(() =>
+        {
+            if (e.PropertyName is null or "" or nameof(MainViewModel.UpdateActionText) or nameof(MainViewModel.CanRunUpdateAction))
+            {
+                item.Header = model.UpdateActionText;
+                item.IsEnabled = model.CanRunUpdateAction;
+            }
+        });
+        return item;
     }
 
     private void ShowBadge(Window window)

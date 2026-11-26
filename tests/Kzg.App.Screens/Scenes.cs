@@ -202,6 +202,13 @@ internal sealed class SceneBuilder : IDisposable
             model.ShowSettings = true;
             return model;
         });
+        yield return Make("settings-update-ready", () =>
+        {
+            _updater = new ScriptedUpdater(UpdateStage.Ready, "0.2.0");
+            var model = Online();
+            model.ShowSettings = true;
+            return model;
+        });
         yield return Make("26-update-ready", () =>
         {
             _updater = new ScriptedUpdater(UpdateStage.Ready, "0.2.0");

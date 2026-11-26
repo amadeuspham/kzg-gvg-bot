@@ -139,7 +139,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         RestartInputCommand = new RelayCommand(RestartInput);
         RestartAsAdministratorCommand = new RelayCommand(RestartAsAdministrator);
         RestartToUpdateCommand = new RelayCommand(() => _updater?.RestartToUpdate(), () => !IsBroadcasting);
-        CheckForUpdatesCommand = new RelayCommand(() => _ = CheckForUpdatesAsync());
+        UpdateActionCommand = new RelayCommand(RunUpdateAction);
         OpenInputMonitoringSettingsCommand = new RelayCommand(_permissions.OpenInputMonitoringSettings);
         ShowMacPromptCommand = new RelayCommand(() =>
         {
@@ -195,7 +195,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public ICommand RestartToUpdateCommand { get; }
 
-    public ICommand CheckForUpdatesCommand { get; }
+    /// <summary>The one update action every surface (Settings, tray, macOS app menu) shows: restart when an update is ready, otherwise look for one.</summary>
+    public ICommand UpdateActionCommand { get; }
 
     public ICommand OpenInputMonitoringSettingsCommand { get; }
 
@@ -510,12 +511,27 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public string UpdateStatusText => _updater switch
     {
         { Stage: UpdateStage.Checking } => "Checking for updates…",
-        { Stage: UpdateStage.Ready } => $"Version {_updater.ReadyVersion} is ready to install",
+        { Stage: UpdateStage.Ready } => $"Version {_updater.ReadyVersion} is ready.",
         { Stage: UpdateStage.Failed } => "Couldn't check for updates",
-        _ => "You have the newest version",
+        _ => $"You have the newest version (v{AppInfo.Version})",
     };
 
-    public bool CanCheckForUpdates => _updater is { Stage: UpdateStage.Idle or UpdateStage.Failed };
+    public string UpdateActionText => _updater switch
+    {
+        { Stage: UpdateStage.Checking } => "Checking for Updates…",
+        { Stage: UpdateStage.Ready } => "Restart to Update",
+        _ => "Check for Updates…",
+    };
+
+    /// <summary>Off while a check runs, and while broadcasting when the action would restart the app.</summary>
+    public bool CanRunUpdateAction => _updater switch
+    {
+        { Stage: UpdateStage.Ready } => !IsBroadcasting,
+        { Stage: UpdateStage.Idle or UpdateStage.Failed } => true,
+        _ => false,
+    };
+
+    public bool UpdateIsReady => _updater is { Stage: UpdateStage.Ready };
 
     public bool ShowUnlinkConfirm => _unlinkAsked;
 
@@ -1061,6 +1077,23 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             list.Add(new($"Version {_updater.ReadyVersion} is ready.", IsError: false, "Restart to update", RestartToUpdateCommand, IsInfo: true));
         }
         return list;
+    }
+
+    private void RunUpdateAction()
+    {
+        // The tray and app menu can fire a stale click, so the guard lives here and not only in the enabled state.
+        if (!CanRunUpdateAction)
+        {
+            return;
+        }
+        if (_updater is { Stage: UpdateStage.Ready })
+        {
+            _updater.RestartToUpdate();
+        }
+        else
+        {
+            _ = CheckForUpdatesAsync();
+        }
     }
 
     private async Task CheckForUpdatesAsync()

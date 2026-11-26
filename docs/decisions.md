@@ -50,3 +50,4 @@ Orientation: one line per decision, newest-relevant first within each topic; the
 - The app's display name is "Discord Broadcast", but the Velopack pack id `KZGBroadcast` and the Mac bundle id `app.kzg.broadcast` are kept, so installed apps keep updating and macOS keeps the Input Monitoring grant; only the installer file names, the Mac `.app` name (vpk's `--packTitle`) and the Windows startup entry changed.
 - The default Bot address is set at build time through the `KzgDefaultHost` MSBuild property; a saved setting wins over it and the field stays editable.
 - The download page lives in `site/` and `.github/workflows/pages.yml` deploys it to GitHub Pages; the source keeps `OWNER/REPO` placeholders that the workflow fills from the repo, so no account name is committed in the page and release links always use `releases/latest/download`.
+- Update actions live in the tray menu on both OSes and the app menu on macOS; no Windows toasts (untestable dependency).
