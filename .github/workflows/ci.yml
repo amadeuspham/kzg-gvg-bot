@@ -2,32 +2,8 @@ name: CI
 
 on:
   pull_request:
-    paths-ignore:
-      - 'site/**'
-      - 'docs/**'
-      - '**/*.md'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'infra/**'
-      - 'spike/**'
-      - '.claude/**'
-      - '.github/workflows/pages.yml'
-      - '.github/workflows/terraform.yml'
-      - '.github/workflows/release.yml'
   push:
     branches: [main]
-    paths-ignore:
-      - 'site/**'
-      - 'docs/**'
-      - '**/*.md'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'infra/**'
-      - 'spike/**'
-      - '.claude/**'
-      - '.github/workflows/pages.yml'
-      - '.github/workflows/terraform.yml'
-      - '.github/workflows/release.yml'
 
 # Least privilege: CI only reads the repo. No secrets are used anywhere in this file.
 permissions:
@@ -38,8 +14,61 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Replaces trigger-level paths-ignore: a skipped workflow never reports its checks,
+  # which would block a PR once checks are required. The workflow always runs; this job
+  # decides whether the gate is needed.
+  changes:
+    name: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.filter.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect non-ignored changes
+        id: filter
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = "pull_request" ]; then base="$PR_BASE"; else base="$PUSH_BEFORE"; fi
+          # No usable base (new branch, force push, unfetched commit): run the gate.
+          if [ -z "$base" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            echo "No usable base commit; running the gate."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Paths that never need the gate (anchored ERE, one per line).
+          ignore='^site/
+          ^docs/
+          \.md$
+          ^package\.json$
+          ^package-lock\.json$
+          ^infra/
+          ^spike/
+          ^\.claude/
+          ^\.github/workflows/pages\.yml$
+          ^\.github/workflows/terraform\.yml$
+          ^\.github/workflows/release\.yml$'
+          ignore=$(printf '%s\n' "$ignore" | sed 's/^ *//')
+          changed=$(git diff --name-only "$base" HEAD)
+          echo "Changed files:"; printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -v '^$' | grep -qvE -f <(printf '%s\n' "$ignore"); then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Only ignored paths changed; skipping the gate."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
   gate:
     name: gate (${{ matrix.name }})
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     strategy:
@@ -75,3 +104,22 @@ jobs:
           # Format output is the same on every OS, so only Linux runs it.
           KZG_SKIP_FORMAT: ${{ matrix.skip_format }}
         run: scripts/check.sh
+
+  # The single required check. Always runs; fails only if the change detection or a gate
+  # job failed or was cancelled. A skipped gate (docs-only change) passes.
+  ci-result:
+    name: CI result
+    needs: [changes, gate]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check results
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          GATE: ${{ needs.gate.result }}
+        run: |
+          echo "changes=$CHANGES gate=$GATE"
+          if [ "$CHANGES" != "success" ] || [ "$GATE" = "failure" ] || [ "$GATE" = "cancelled" ]; then
+            exit 1
+          fi
