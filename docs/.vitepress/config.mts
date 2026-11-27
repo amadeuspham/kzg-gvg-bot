@@ -65,6 +65,8 @@ export default defineConfig({
   description: 'A Discord relay for team voice events: guides for players, hosts and developers.',
   // The download page owns the site root; the docs live under /docs/ next to it.
   base: `/${repoName}/docs/`,
+  // The download page's icon; pages.yml copies it to the site root.
+  head: [['link', { rel: 'icon', type: 'image/png', href: `/${repoName}/icon.png` }]],
   cleanUrls: true,
   srcExclude: unpublished,
   markdown: { config: configureMarkdown },
